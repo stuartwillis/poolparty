@@ -6,7 +6,7 @@ Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for as
 
 # Getting Started
 
- PoolParty is designed to be run on Linux servers. As such, memory and storage may be limiting factor for some systems depending on genome sizes, number of pools, number of SNPs, etc. In general, 128 gb of ram with at least 10 threads should suffice. 
+ PoolParty is designed to be run on Linux servers. As such, memory and storage may be limiting factor for some systems depending on genome sizes, number of pools, number of SNPs, etc.
 
  It is highly recommended to run the example files provided in the example directories before analyzing real datasets.  
 
