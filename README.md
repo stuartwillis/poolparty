@@ -1,10 +1,10 @@
-# :fish: PoolParty  :umbrella:
+# PoolParty
 
 ### A BASH pipeline to align and analyze paired-end NGS data on a genome assembly.  
 
 Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for association mapping in nonmodel organisms. Molecular Ecology Resources 10.1111/1755-0998.12784"
 
-# Getting Started
+## Getting Started
 
  PoolParty is designed to be run on Linux servers. As such, memory and storage may be limiting factor for some systems depending on genome sizes, number of pools, number of SNPs, etc.
 
@@ -17,11 +17,11 @@ Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for as
  Instructions are provided below for installing dependencies with conda, i.e. without sudo privileges. 
  
  
-# Dependencies
+## Dependencies
 
 PoolParty is designed to be run on Linux (GNU) operating systems. Because it coordinates the execution of multiple packages there are number of dependencies that must be installed prior to running. With the use of diverse packages, the latest versions of Java, Perl, and R must be installed. The required packages for PoolParty are:
 
-## Required package with version at inception 
+### Required package with version at inception 
 - Burrows-Wheeler Aligner (BWA; 07.12) - http://bio-bwa.sourceforge.net/  
 - Fastqc (0.11.7 ) - https://www.bioinformatics.babraham.ac.uk/projects/fastqc/  
 - samblaster (0.1.24) - https://github.com/GregoryFaust/samblaster  
@@ -39,9 +39,9 @@ If not already installed, PoolParty will attempt to automatically install requir
 -PPstats: reshape, fBasics, ggplot2, RColorBrewer  
 -PPanalyze: matrixStats, plyr, stringr, data.table, fBasics, ape, metap
 
-# Installing Conda
+## Installing Conda
 
-###The basis for this installation is **conda** (Anaconda/Miniconda), which was designed for python but have been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
+### The basis for this installation is **conda** (Anaconda/Miniconda), which was designed for python but have been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
 
 There are generally two options for installing with Conda; each user has a global conda 'environment' that provides programs in THEIR path (but no one else's); this may still suffer some version conflicts; the other option is to create separate environments where different copies/versions of programs are installed; this prevents version conflicts, but each 'environment' must be activated each time to make those programs accessible in the path (which is simple)
 
@@ -57,7 +57,7 @@ We install **conda** as follows, beginning in our home directory
 
 This will install the latest miniconda software in your home directory. Answer 'yes' as needed. If any problems are encountered, consult the conda help literature. You may need to start a new ssh session for conda to activate.
 
-###Adding conda channels, with priority
+### Adding conda channels, with priority
 
 Conda works by drawing 'recipes' for installation from 'channels'. These opt-in channels are stored in the .condarc file (this hidden file resides in your home directory; find it with `ls -a`). Each time a conda channel is added, it takes priority over the previous ones, so that if an identically-named recipe is found in multiple, it will be pulled from the higher priority channel. We add channels as follows:
 
@@ -78,7 +78,7 @@ FYI, 'biobuilds' is only necessary for Mac users running PoolParty in terminal (
 to check that channels were added properly. If one wished to change the priority of a channel, just add it again to the top as before, though one can also specify which channel to pull a recipe from a specific channel.
 
 
-# Installing The Pipeline and its Dependencies
+## Installing The Pipeline and its Dependencies
 
 All the following installation could theoretically be done in the user's global ("base") conda environment. But as described, it's safer to create separate environments for different program dependency suites. Let's create one for PoolParty, and in doing so, install the R environment from the conda-forge environment.
 
@@ -162,13 +162,15 @@ Popoolation2 and PoolParty don't actually require any installation (they are jus
 
 > rm popoolation2_1201.zip
 
-> wget https://github.com/StevenMicheletti/poolparty/archive/master.zip
+> wget https://github.com/stuartwillis/poolparty/archive/refs/heads/main.zip
 
-> unzip master.zip
+> unzip main.zip
 
-> rm master.zip
+> rm main.zip
 
-These now reside at `~/bin`. You shouold specify `~/bin/popoolation2_1201` in the config files for PoolParty as needed. We will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
+> mv poolparty-main poolparty
+
+These now reside at `~/bin`. You shouold specify `~/bin/popoolation2_1201` in the config files for PoolParty as needed. PRO tip: you can add ~/bin to your user $PATH, so that everything in that folder is globally accessible in the $PATH, by adding it to the line in ~/.bash_profile as '$HOME/bin'. Now, we will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
 
 > ls ~/miniconda3/envs/poolparty_env/share/picard*/*.jar
 
@@ -176,7 +178,7 @@ Depending on what this returns, specify `~/miniconda3/envs/poolparty_env/share/p
 
 You should now be ready to run PoolParty. Try starting with the examples ;-)
 
-# Troubleshooting
+## Troubleshooting
 
 PoolParty is constantly evolving so users may encounter bugs. However, there are common issues that can be avoided  :
 
