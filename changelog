@@ -1,0 +1,36 @@
+------------------------
+Version 0.81, 6/14/2018
+------------------------
+-PPmanhat will now perform z-transformation on values with the -z argument
+-Minor bug fixes  and additional error checking
+
+
+------------------------
+Version 0.8, 5/17/2018
+------------------------
+-Added the ability to use a VCF with SNP locations and skip variant calling
+-Added the ability to only perform alignment with PPalign
+-Fixed a bug in PPanalyze that was improperly filtering the coverage tables
+-Can now use single-end reads; PPalign will automatically detect if reads are SE based on samplelist
+-A full and complete frequency table are no longer produced in PPalign. Now, a single frequency table that represents the old frequency table is produced (.fz)
+
+------------------------
+Version 0.76, 4/10/2018
+------------------------
+
+Added new utility bash and R scripts for additional analyses:
+- PPmanhat, with r_plotter.R
+- PPrunls, with r_localscore.R
+- PPrunflk, with r_FLKu.R
+- PPruncmh
+- PPsubset
+
+-Updated example documentation
+-Fixed a common error in Rscript due to antiquated notation in MaxtrixStats
+-Added a check for mkfifo in PPalign and PPstats
+-Changed certain instances of awk to gawk which fixed memory issues for some users
+-Added PCA to r_structure.R
+-PPalign no longer writes full temporary mpileup, instead uses process substitution to filter while creating mpileups 
+-Set pipefail for scripts to exit upon any errors
+-Additional minor bug fixes
+
