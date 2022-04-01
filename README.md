@@ -41,9 +41,9 @@ If not already installed, PoolParty will attempt to automatically install requir
 
 ## Installing Conda
 
-### The basis for this installation is **conda** (Anaconda/Miniconda), which was designed for python but have been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
+#### The basis for this installation is **conda** (Anaconda/Miniconda), which was designed for python but has been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
 
-There are generally two options for installing with Conda; each user has a global conda 'environment' that provides programs in THEIR path (but no one else's); this may still suffer some version conflicts; the other option is to create separate environments where different copies/versions of programs are installed; this prevents version conflicts, but each 'environment' must be activated each time to make those programs accessible in the path (which is simple)
+There are generally two options for installing with conda; each user has a global conda 'environment' that provides programs in THEIR path (but no one else's); this may still suffer some version conflicts; the other option is to create separate environments where different copies/versions of programs are installed; this prevents version conflicts, but each 'environment' must be activated each time to make those programs accessible in the path (which is simple)
 
 Though most users will not notice a difference, there are also two flavors of conda: Anaconda and Miniconda. The difference is that Anaconda is a much larger installation with many included programs, most of which most users will never use. Miniconda is the light version, installing much faster; we recommend that one below, though either should serve for our purposes.
 
@@ -59,7 +59,7 @@ This will install the latest miniconda software in your home directory. Answer '
 
 ### Adding conda channels, with priority
 
-Conda works by drawing 'recipes' for installation from 'channels'. These opt-in channels are stored in the .condarc file (this hidden file resides in your home directory; find it with `ls -a`). Each time a conda channel is added, it takes priority over the previous ones, so that if an identically-named recipe is found in multiple, it will be pulled from the higher priority channel. We add channels as follows:
+Conda works by drawing 'recipes' for installation from 'channels'. These opt-in channels are stored in the `.condarc` file (this hidden file resides in your home directory; find it with `ls -a`). Each time a conda channel is added, it takes priority over the previous ones, so that if an identically-named recipe is found in multiple, it will be pulled from the higher priority channel. We add channels as follows:
 
 > conda config --add channels defaults
 
@@ -126,7 +126,7 @@ You will need to resolve any installation errors before proceeding. Now let's in
 
 > conda install bwa fastqc samblaster samtools bcftools picard bbmap perl-app-cpanminus parallel
 
-Now we need to install the perl module *PPanalyze* uses for Fisher's exact test, using CPAN (hence why we installed perl-app-cpanminus)
+Answer 'yes' as necessary. Now we need to install the perl module *PPanalyze* uses for Fisher's exact test, using CPAN (hence why we installed perl-app-cpanminus)
 
 > cpan Text::NSP::Measures::2D::Fisher::twotailed
 
@@ -136,11 +136,11 @@ Answer yes if asked about auto-configuration. Now make sure bbmap can find its a
 
 >cp -r ~/miniconda3/envs/poolparty_R4_env/opt/bbmap*/resources ~/miniconda3/envs/poolparty_R4_env/bin
 
-Now check that samtools works; if it complains about libraries, these can be copied as below
+Check that samtools works.
 
 > samtools
 
-This usually occurs because R 4+ requires openssl 1.1. If a library can't be found, try linking a similar library in it's place.
+It may complain about libraries, which sometimes occurs because R 4+ requires openssl 1.1, but samtools expects a different version. If a library can't be found, try linking a similar library in it's place.
 
 > ls ~/miniconda3/envs/poolparty_R4_env/lib/
 
@@ -148,7 +148,7 @@ This usually occurs because R 4+ requires openssl 1.1. If a library can't be fou
 
 > samtools
 
-Popoolation2 and PoolParty don't actually require any installation (they are just perl or bash scripts), so we can just put them in a special user directory for programs, ~/bin
+Finally, Popoolation2 and PoolParty don't actually require any installation (they are just perl or bash scripts), so we can just put them in a special user directory for programs, ~/bin
 
 > cd ~
 
