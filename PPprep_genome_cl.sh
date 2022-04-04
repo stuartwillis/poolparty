@@ -1,4 +1,5 @@
 #!/bin/bash
+#v04.01.2022
 
 #prepares reference genome in FASTA format for BWA alignment
 

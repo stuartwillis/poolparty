@@ -1,4 +1,5 @@
 #!/bin/bash
+#v04.01.2022
 
 #This script plots results from PPanalyze, runs the FLK test (midpoint root; fails with <3 samples), and optionally runs the CMH test
 

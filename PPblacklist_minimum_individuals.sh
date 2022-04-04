@@ -1,5 +1,5 @@
 #!/bin/bash
-#by SCW
+#v04.01.2022
 
 #collect snps_stats files, awk to find sites below MIN, create temporary list, then sort for non-redundant list
 

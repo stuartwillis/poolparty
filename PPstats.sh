@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PoolParty v0.81
+#PoolParty v04.01.2022
 #PPstats
 
 source $1

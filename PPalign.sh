@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PoolParty v06.17.2020SCW
+#PoolParty v04.01.2022
 #PPalign
 
 set -o pipefail
