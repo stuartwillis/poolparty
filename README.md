@@ -140,7 +140,7 @@ Check that samtools works.
 
 > samtools
 
-It may complain about libraries, which sometimes occurs because R 4+ requires openssl 1.1, but samtools expects a different version. If a library can't be found, try linking a similar library in it's place.
+It may complain about libraries, which sometimes occurs because R 4+ requires openssl 1.1, but samtools expects a different version. If a library can't be found, try linking a similar library in it's place. Otherwise ignore this step.
 
 > ls ~/miniconda3/envs/poolparty_R4_env/lib/
 
