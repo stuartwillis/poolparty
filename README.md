@@ -84,7 +84,7 @@ to check that channels were added properly. If one wished to change the priority
 
 All the following installation could theoretically be done in the user's global ("base") conda environment. But as described, it's safer to create separate environments for different program dependency suites. Let's create one for PoolParty, and in doing so, install the R environment from the conda-forge environment.
 
-> conda create -n poolparty_env -c conda-forge r-base=4 r-gert r-fftwtools
+> conda create -n poolparty_env -c conda-forge r-base=4
 
 We have to specify to make sure R 4.x is installed as many packages are now only available for basic install with 4+. And we have to install r-gert for the "devtools" package, which we need to install an older version of metap, because the newer version uses 'qqconf', which Installation may take a while. Once it's finishes, we will have a conda environment named 'poolparty_env' with R installed. This environment will not automatically be active. To activate this environment, we use
 
