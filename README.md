@@ -65,13 +65,15 @@ Conda works by drawing 'recipes' for installation from 'channels'. These opt-in 
 
 > conda config --add channels conda-forge
 
-> conda config --add channels biobuilds 
-
 > conda config --add channels bioconda
 
 > conda config --add channels r
 
-FYI, 'biobuilds' is only necessary for Mac users running PoolParty in terminal (to install a Mac-compatible samblaster).
+FYI, the 'biobuilds' channel is necessary for Mac users running PoolParty in terminal to install a Mac-compatible samblaster. If that's not you, skip it.
+
+> conda config --add channels biobuilds 
+
+Take a look at your channels
 
 > cat .condarc
 
@@ -82,9 +84,9 @@ to check that channels were added properly. If one wished to change the priority
 
 All the following installation could theoretically be done in the user's global ("base") conda environment. But as described, it's safer to create separate environments for different program dependency suites. Let's create one for PoolParty, and in doing so, install the R environment from the conda-forge environment.
 
-> conda create -n poolparty_env -c conda-forge r-base
+> conda create -n poolparty_env -c conda-forge r-base=4 r-gert r-fftwtools
 
-This may take a while. Once it's finishes, we will have a conda environment named 'poolparty_env' with R installed. This environment will not automatically be active. To activate this environment, we use
+We have to specify to make sure R 4.x is installed as many packages are now only available for basic install with 4+. And we have to install r-gert for the "devtools" package, which we need to install an older version of metap, because the newer version uses 'qqconf', which Installation may take a while. Once it's finishes, we will have a conda environment named 'poolparty_env' with R installed. This environment will not automatically be active. To activate this environment, we use
 
 > conda activate poolparty_env
 
@@ -104,17 +106,17 @@ should return something like
 
 `~/miniconda3/envs/poolparty_env/bin/R`
 
-If not, check for errors and try again. Now let's install the R package dependencies. We actually can't install the multtest dependency, from Bioconductor, remotely, so we have to download it before we start R.
-
-> wget http://www.bioconductor.org/packages/release/bioc/src/contrib/multtest_2.44.0.tar.gz
+If not, check for errors and try again. Now start R
 
 > R
+
+And enter the following installation commands
 
 ```
 install.packages("BiocManager")
 BiocManager::install(c("BiocGenerics","Biobase"))
 install.packages(c("survival","MASS"))
-install.packages("multtest_2.44.0.tar.gz",repos=NULL, type="source")
+BiocManager::install("multtest")
 library("multtest")
 install.packages(c("metap","ape","matrixStats","fBasics","bibtex","gbRd","Rdpack"))
 install.packages(c("ggplot2","RColorBrewer","data.table","tidyr")
@@ -122,9 +124,30 @@ BiocManager::install("qvalue")
 quit(save="no")
 ```
 
-You will need to resolve any installation errors before proceeding. Now let's install the other PoolParty dependencies. These should install from the bioconda channel, which should take precedence in the order of channels (by virtue of being added later)
+You will need to resolve any installation errors before proceeding. One occasional bug is that the most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) and older version and install locally, as follows:
 
-> conda install bwa fastqc samblaster samtools bcftools picard bbmap perl-app-cpanminus parallel
+> wget https://cran.r-project.org/src/contrib/Archive/metap/metap_1.7.tar.gz
+
+```
+install.packages("metap_1.7.tar.gz",repos=NULL, type="source")
+library(metap)
+quit(save="no")
+```
+
+Another occasional bug is that 'multtest', from Bioconductor, can't be installed remotely. Instead, we can also download it outside of R and repeat the installation. Check the multest website (https://www.bioconductor.org/packages/release/bioc/html/multtest.html) to confirm which version is available. 
+
+> wget https://www.bioconductor.org/packages/release/bioc/src/contrib/multtest_2.50.0.tar.gz
+
+
+```
+install.packages("multtest_2.50.0.tar.gz",repos=NULL, type="source")
+library("multtest")
+quit(save="no")
+```
+
+Now let's install the other PoolParty dependencies. These should install from the bioconda channel, which should take precedence in the order of channels (by virtue of being added later)
+
+> conda install bwa fastqc samblaster samtools bcftools picard bbmap perl-app-cpanminus parallel dos2unix
 
 Answer 'yes' as necessary. Now we need to install the perl module *PPanalyze* uses for Fisher's exact test, using CPAN (hence why we installed perl-app-cpanminus)
 
@@ -156,7 +179,7 @@ Finally, Popoolation2 and PoolParty don't actually require any installation (the
 
 > cd bin
 
-> wget https://downloads.sourceforge.net/project/popoolation2/popoolation2_1201.zip
+> wget --no-check-certificate https://downloads.sourceforge.net/project/popoolation2/popoolation2_1201.zip
 
 > unzip popoolation2_1201.zip
 
