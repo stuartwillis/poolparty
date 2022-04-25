@@ -131,7 +131,7 @@ BiocManager::install("qvalue")
 quit(save="no")
 ```
 
-You will need to resolve any installation errors before proceeding. One occasional bug is that the most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) and older version and install locally, as follows:
+You will need to resolve any installation errors before proceeding. One occasional bug is that the most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) an older version of 'metap' and install locally, as follows:
 
 > wget https://cran.r-project.org/src/contrib/Archive/metap/metap_1.7.tar.gz
 
@@ -143,7 +143,7 @@ library(metap)
 quit(save="no")
 ```
 
-Another occasional bug is that 'multtest', from Bioconductor, can't be installed remotely. Instead, we can also download it outside of R and repeat the installation. Check the multest website (https://www.bioconductor.org/packages/release/bioc/html/multtest.html) to confirm which version is available. 
+Another occasional bug is that 'multtest', from Bioconductor, can't be installed remotely. Similarly, we can also download it outside of R and repeat the installation. Check the multest website (https://www.bioconductor.org/packages/release/bioc/html/multtest.html) to confirm which version is available. 
 
 > wget https://www.bioconductor.org/packages/release/bioc/src/contrib/multtest_2.50.0.tar.gz
 
