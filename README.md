@@ -79,6 +79,13 @@ Take a look at your channels
 
 to check that channels were added properly. If one wished to change the priority of a channel, just add it again to the top as before, though one can also specify which channel to pull a recipe from a specific channel.
 
+Notice also that the channel priority defaults to "strict". Although we prefer that conda get a package from channels in the order we've specified (in .condarc), we usually prefer that conda solve version conflicts itself rather than failing and reporting why, which it does by choosing from the other channels we have listed. In other words, we want it to be "flexible" in terms of choosing (priority first, then solve conflicts). We can tell it to do that with the following command:
+
+> conda config --set channel_priority strict
+
+Now take a look at your channels files again, and would should see that "channel priority" is set to "flexible".
+
+> cat .condarc
 
 ## Installing The Pipeline and its Dependencies
 
@@ -119,7 +126,7 @@ install.packages(c("survival","MASS"))
 BiocManager::install("multtest")
 library("multtest")
 install.packages(c("metap","ape","matrixStats","fBasics","bibtex","gbRd","Rdpack"))
-install.packages(c("ggplot2","RColorBrewer","data.table","tidyr")
+install.packages(c("ggplot2","RColorBrewer","data.table","tidyr"))
 BiocManager::install("qvalue")
 quit(save="no")
 ```
@@ -127,6 +134,8 @@ quit(save="no")
 You will need to resolve any installation errors before proceeding. One occasional bug is that the most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) and older version and install locally, as follows:
 
 > wget https://cran.r-project.org/src/contrib/Archive/metap/metap_1.7.tar.gz
+
+> R
 
 ```
 install.packages("metap_1.7.tar.gz",repos=NULL, type="source")
@@ -138,6 +147,7 @@ Another occasional bug is that 'multtest', from Bioconductor, can't be installed
 
 > wget https://www.bioconductor.org/packages/release/bioc/src/contrib/multtest_2.50.0.tar.gz
 
+> R
 
 ```
 install.packages("multtest_2.50.0.tar.gz",repos=NULL, type="source")
