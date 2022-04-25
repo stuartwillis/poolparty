@@ -81,7 +81,7 @@ to check that channels were added properly. If one wished to change the priority
 
 Notice also that the channel priority defaults to "strict". Although we prefer that conda get a package from channels in the order we've specified (in .condarc), we usually prefer that conda solve version conflicts itself rather than failing and reporting why, which it does by choosing from the other channels we have listed. In other words, we want it to be "flexible" in terms of choosing (priority first, then solve conflicts). We can tell it to do that with the following command:
 
-> conda config --set channel_priority strict
+> conda config --set channel_priority flexible
 
 Now take a look at your channels files again, and would should see that "channel priority" is set to "flexible".
 
@@ -103,7 +103,7 @@ or
 
 depending on your linux distribution. Once it's active, your prompt should be preceded with something like
 
-`(poolparty_R4_env) [user]$`
+`(poolparty_env) [user]$`
 
 To return to your base environment, 'deactivate', 'conda activate', or just log out (but wait until you've installed the remaining dependencies and tested poolparty!) Let's check that R was installed properly:
 
@@ -155,7 +155,7 @@ library("multtest")
 quit(save="no")
 ```
 
-Now let's install the other PoolParty dependencies. These should install from the bioconda channel, which should take precedence in the order of channels (by virtue of being added later)
+Now let's install the other PoolParty dependencies. These should install from the bioconda channel, which should take precedence in the order of channels (by virtue of being added later), but flexibly added from conda-forge to resolve conflicts.
 
 > conda install bwa fastqc samblaster samtools bcftools picard bbmap perl-app-cpanminus parallel dos2unix
 
@@ -163,25 +163,27 @@ Answer 'yes' as necessary. Now we need to install the perl module *PPanalyze* us
 
 > cpan Text::NSP::Measures::2D::Fisher::twotailed
 
-Answer yes if asked about auto-configuration. Now make sure bbmap can find its adapter file (confirm their present, then copy them)
+Answer yes if asked about auto-configuration. Now make sure bbmap can find its adapter file (confirm they're present, then copy them)
 
->ls ~/miniconda3/envs/poolparty_R4_env/opt/bbmap*/resources
+> ls ~/miniconda3/envs/poolparty_env/opt/bbmap*/resources
 
->cp -r ~/miniconda3/envs/poolparty_R4_env/opt/bbmap*/resources ~/miniconda3/envs/poolparty_R4_env/bin
+If this list files rather than throws an error, you're good to copy. If not, find where the adapter files are and change the 'source' path below.
+
+> cp -r ~/miniconda3/envs/poolparty_env/opt/bbmap*/resources ~/miniconda3/envs/poolparty_env/bin
 
 Check that samtools works.
 
 > samtools
 
-It may complain about libraries, which sometimes occurs because R 4+ requires openssl 1.1, but samtools expects a different version. If a library can't be found, try linking a similar library in it's place. Otherwise ignore this step.
+It may complain about libraries, which sometimes occurs because R 4+ installs a different version of openssl than samtools expects (1.0.0). If a library can't be found, try linking a similar library (e.g. libcrypto.so, libcrypto.so.3, libcrypto.so.1.1, etc.; AFAIK they all work) in it's place. Modify the names as appropriate in the second command below. Otherwise, if samtools works (lists its options with the above call), ignore this step.
 
-> ls ~/miniconda3/envs/poolparty_R4_env/lib/
+> ls ~/miniconda3/envs/poolparty_env/lib/libcrypto.so*
 
-> ln -s ~/miniconda3/envs/poolparty_R4_env/lib/libcrypto.so.1.1 ~/miniconda3/envs/poolparty_R4_env/lib/libcrypto.so.1.0.0
+> ln -s ~/miniconda3/envs/poolparty_env/lib/libcrypto.so ~/miniconda3/envs/poolparty_env/lib/libcrypto.so.1.0.0
 
 > samtools
 
-Finally, Popoolation2 and PoolParty don't actually require any installation (they are just perl or bash scripts), so we can just put them in a special user directory for programs, ~/bin
+Finally, Popoolation2 and PoolParty don't actually require any installation (they are just perl and bash scripts), so we can just put them in a special user directory for programs, ~/bin
 
 > cd ~
 
@@ -203,11 +205,13 @@ Finally, Popoolation2 and PoolParty don't actually require any installation (the
 
 > mv poolparty-main poolparty
 
-These now reside at `~/bin`. You shouold specify `~/bin/popoolation2_1201` in the config files for PoolParty as needed. PRO tip: you can add ~/bin to your user $PATH, so that everything in that folder is globally accessible in the $PATH, by adding it to the line in ~/.bash_profile as '$HOME/bin'. Now, we will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
+These now reside at `~/bin`. You shouold specify `~/bin/popoolation2_1201` in the config files for PoolParty as needed. PRO tip: you can add ~/bin to your user $PATH, so that everything in that folder is globally accessible in the $PATH, by adding it to the line in ~/.bash_profile as '$HOME/bin'. 
+
+Now, we will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
 
 > ls ~/miniconda3/envs/poolparty_env/share/picard*/*.jar
 
-Depending on what this returns, specify `~/miniconda3/envs/poolparty_env/share/picard-2.20.2-0/picard.jar` or similar as needed in the config files.
+Depending on what this returns, specify `~/miniconda3/envs/poolparty_env/share/picard-2.20.2-0/picard.jar` *or similar* as needed in the config files.
 
 You should now be ready to run PoolParty. Try starting with the examples ;-)
 
