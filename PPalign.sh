@@ -68,7 +68,7 @@ fi
 #Confirm with user that correct sample list has been identified [optional]
 if [ ! -z $CONFIRM ] &&  [[ "$CONFIRM" =~(on)$ ]] ; then
 	if [[ -f $INDIR/"$SAMPLE" ]] ; then
-		echo -e "\nSample list file "$SAMPLE" was found. Is this correct?"
+		echo -e "\nSample list file "$SAMPLE" was found. Is this correct? Type 'yes' or 'no'"
 		read Sampcorrect
 
 		if [ "$Sampcorrect" == "no" ]; then
@@ -299,7 +299,7 @@ else
 fi
 
 if [ ! -z $CONFIRM ] &&  [[ "$CONFIRM" =~(on)$ ]] ; then
-echo -e "\n"${#CHECK2[@]} "read files are detected for "$INDnum" individuals in "$parraynum" populations. Is this correct? Enter yes or no and press [ENTER]"
+echo -e "\n"${#CHECK2[@]} "read files are detected for "$INDnum" individuals in "$parraynum" populations. Is this correct? Enter 'yes' or 'no' and press [ENTER]"
 
 read Indcorrect
 
@@ -914,8 +914,8 @@ fi
 							cat ${CHR[j]} ${SCAF[j]} > $OUTDIR/refint0$k.txt
 						done
 
-#						rm chr_refint*
-#						rm scaf_refint*
+						rm chr_refint*
+						rm scaf_refint*
 					#end 'make reference intervals with or without scaffold prefix'
 					fi
 
@@ -1032,8 +1032,9 @@ fi
 				fi
 
 				if [ ! -f $OUTDIR/vcfheader.txt ]; then
-					gunzip -c $OUTDIR/refint01.txt.vcf.gz_Qualtemp.vcf.gz | grep "^#" | head -n1 > $OUTDIR/vcfheader.txt
-					gunzip -c $OUTDIR/refint01.txt.vcf.gz_Qualtemp.vcf.gz | grep "^#" | tail -n1 >> $OUTDIR/vcfheader.txt
+					gunzip -c $OUTDIR/refint01.txt.vcf.gz_Qualtemp.vcf.gz | grep "^#" > $OUTDIR/vcfheader.txt
+#					gunzip -c $OUTDIR/refint01.txt.vcf.gz_Qualtemp.vcf.gz | grep "^#" | head -n1 > $OUTDIR/vcfheader.txt
+#					gunzip -c $OUTDIR/refint01.txt.vcf.gz_Qualtemp.vcf.gz | grep "^#" | tail -n1 >> $OUTDIR/vcfheader.txt
 				fi
 
 				#check for sorted.VCF and that it has header and SNP lines
