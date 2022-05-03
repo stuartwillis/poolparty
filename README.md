@@ -126,7 +126,7 @@ install.packages(c("survival","MASS"))
 BiocManager::install("multtest")
 library("multtest")
 install.packages(c("metap","ape","matrixStats","fBasics","bibtex","gbRd","Rdpack"))
-install.packages(c("ggplot2","RColorBrewer","data.table","tidyr"))
+install.packages(c("ggplot2","RColorBrewer","data.table","tidyr","reshape"))
 BiocManager::install("qvalue")
 quit(save="no")
 ```
