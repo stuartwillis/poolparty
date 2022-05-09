@@ -10,13 +10,13 @@ Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for as
 
  It is highly recommended to run the example files provided in the example directories before analyzing real datasets.  
 
+ 
+ 
  PDF files in the example folders contains additional detailed information on the pipeline.  
  
  We stronly recommend the use of linux 'screens' when running the PoolParty modules, as this avoids connection-interription crashes.
 
  Instructions are provided below for installing dependencies with conda, i.e. without sudo privileges. 
- 
- 
 ## Dependencies
 
 PoolParty is designed to be run on Linux (GNU) operating systems. Because it coordinates the execution of multiple packages there are number of dependencies that must be installed prior to running. With the use of diverse packages, the latest versions of Java, Perl, and R must be installed. The required packages for PoolParty are:
