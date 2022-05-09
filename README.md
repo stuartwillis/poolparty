@@ -9,14 +9,13 @@ Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for as
  PoolParty is designed to be run on Linux servers. As such, memory and storage may be limiting factors for some systems depending on genome sizes, number of pools, number of SNPs, etc.
 
  It is highly recommended to run the example files provided in the example directories before analyzing real datasets.  
-
  
  
  PDF files in the example folders contains additional detailed information on the pipeline.  
  
- We stronly recommend the use of linux 'screens' when running the PoolParty modules, as this avoids connection-interription crashes.
+ We stronly recommend the use of linux 'screens' when running the PoolParty modules, as this avoids connection-interruption crashes without sacrificing the ability to interact with the script.
 
- Instructions are provided below for installing dependencies with conda, i.e. without sudo privileges. 
+ Instructions are provided below for installing dependencies with conda, i.e. **without sudo privileges**. 
 ## Dependencies
 
 PoolParty is designed to be run on Linux (GNU) operating systems. Because it coordinates the execution of multiple packages there are number of dependencies that must be installed prior to running. With the use of diverse packages, the latest versions of Java, Perl, and R must be installed. The required packages for PoolParty are:
@@ -37,11 +36,11 @@ If not already installed, PoolParty will attempt to automatically install requir
 
 -PPalign: matrixStats, tidyr, stringr, data.table  
 -PPstats: reshape, fBasics, ggplot2, RColorBrewer  
--PPanalyze: matrixStats, plyr, stringr, data.table, fBasics, ape, metap
+-PPanalyze: matrixStats, plyr, stringr, data.table, fBasics, ape, metap, multtest
 
 ## Installing Conda
 
-#### The basis for this installation is **conda** (Anaconda/Miniconda), which was designed for python but has been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
+#### The basis for this installation is *conda* (Anaconda/Miniconda), which was designed for python but has been extended for a multitude of common programs. Conda is an excellent software manager that provides for software installation without high-level permissions (e.g. root or sudo), or in most cases, worrying about system idiosyncrasies (RHEL vs. Ubuntu, library presence/location, etc.). It is an *"It just works"* provider
 
 There are generally two options for installing with conda; each user has a global conda 'environment' that provides programs in THEIR path (but no one else's); this may still suffer some version conflicts; the other option is to create separate environments where different copies/versions of programs are installed; this prevents version conflicts, but each 'environment' must be activated each time to make those programs accessible in the path (which is simple)
 
