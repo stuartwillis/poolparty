@@ -162,15 +162,17 @@ Answer 'yes' as necessary. Now we need to install the perl module *PPanalyze* us
 
 > cpan Text::NSP::Measures::2D::Fisher::twotailed
 
-Answer yes if asked about auto-configuration. Now make sure bbmap can find its adapter file (confirm they're present, then copy them)
+Answer yes if asked about auto-configuration. 
+
+Now make sure bbmap can find its adapter file (confirm they're present, then copy them)
 
 > ls ~/miniconda3/envs/poolparty_env/opt/bbmap*/resources
 
-If this list files rather than throws an error, you're good to copy. If not, find where the adapter files are and change the 'source' path below.
+If this list the files in the 'resources' directory, please copy it into 'bin' directory as below. If it throws an error, explore in the 'poolparty_env' directory to find where the bbmap adapter.fa file was installed (hint: use the 'find' command) are and change the 'source' path below.
 
 > cp -r ~/miniconda3/envs/poolparty_env/opt/bbmap*/resources ~/miniconda3/envs/poolparty_env/bin
 
-Check that samtools works.
+Now check that samtools works.
 
 > samtools
 
@@ -206,11 +208,15 @@ Finally, Popoolation2 and PoolParty don't actually require any installation (the
 
 These now reside at `~/bin`. You shouold specify `~/bin/popoolation2_1201` in the config files for PoolParty as needed. PRO tip: you can add ~/bin to your user $PATH, so that everything in that folder is globally accessible in the $PATH, by adding it to the line in ~/.bash_profile as '$HOME/bin'. 
 
-Now, we will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
+Now, PPalign will need to know the path to the picard jar file. This changes based on version number, so instead of changing the directory in all the config files, we can link the jar file to a standard location. First, let's check the jar file exists.
+
+we will need to specify the path to the jar file for Picard, which we installed with conda. Let's check where it is:
 
 > ls ~/miniconda3/envs/poolparty_env/share/picard*/*.jar
 
-Depending on what this returns, specify `~/miniconda3/envs/poolparty_env/share/picard-2.20.2-0/picard.jar` *or similar* as needed in the config files.
+Now link the file to a standard spot in the bin directory for this environment, which is what is specified in all the PPalign config files.
+
+> ln -s ~/miniconda3/envs/poolparty_env/share/picard*/picard.jar ~/miniconda3/envs/poolparty_env/bin/
 
 You should now be ready to run PoolParty. Try starting with the examples ;-)
 
