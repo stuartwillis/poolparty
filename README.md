@@ -116,21 +116,30 @@ If not, check for errors and try again. Now start R
 
 > R
 
-And enter the following installation commands
+And enter the following installation commands (recommend copy/paste one at a time to ensure they work).
 
 ```
 install.packages("BiocManager")
 BiocManager::install(c("BiocGenerics","Biobase"))
 install.packages(c("survival","MASS"))
 BiocManager::install("multtest")
-library("multtest")
 install.packages(c("metap","ape","matrixStats","fBasics","bibtex","gbRd","Rdpack"))
 install.packages(c("ggplot2","RColorBrewer","data.table","tidyr","reshape"))
 BiocManager::install("qvalue")
 quit(save="no")
 ```
 
-You will need to resolve any installation errors before proceeding. One occasional bug is that the most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) an older version of 'metap' and install locally, as follows:
+You will need to resolve any installation errors before proceeding. Two regular bugs are with the packages 'metap' and 'multest' not being installable remotely. Check that they are both installed as follows.
+
+> R
+
+```
+library("multtest")
+library("metap")
+quit(save="no")
+```
+
+If either throws an error, resolve it as follows. The most recent version of 'metap' can't be installed remotely because it now depends on 'qqconf' which also can't be installed because it can't find some FFTW libraries (don't get me started). Alternatively, we can download (outside of R) an older version of 'metap' and install locally, as follows:
 
 > wget https://cran.r-project.org/src/contrib/Archive/metap/metap_1.7.tar.gz
 
@@ -142,7 +151,7 @@ library(metap)
 quit(save="no")
 ```
 
-Another occasional bug is that 'multtest', from Bioconductor, can't be installed remotely. Similarly, we can also download it outside of R and repeat the installation. Check the multest website (https://www.bioconductor.org/packages/release/bioc/html/multtest.html) to confirm which version is available. 
+Occasionally 'multtest', from Bioconductor, can't be installed remotely. We can also download it outside of R and repeat the installation. Check the multest website (https://www.bioconductor.org/packages/release/bioc/html/multtest.html) to confirm which version is available. 
 
 > wget https://www.bioconductor.org/packages/release/bioc/src/contrib/multtest_2.50.0.tar.gz
 
