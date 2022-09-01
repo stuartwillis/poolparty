@@ -90,36 +90,36 @@ thresUnif=function(L, cor, xi, alpha = 0.05){
 # computation of the significative regions from a lindley process given a significance threshold
 
 sig_sl=function(lind,pos, th){
-	zones=c(0,0,0)	
-	list=lind
-	auxpos=pos
-	while(max(list)>=th){
-	  M_loc=which.max(list)
-		if(length(which(list[1:M_loc]==0))==0){ #the peak is at the beginning of the chrom
-			m_loc=1
-			zones=rbind(zones, c(auxpos[m_loc],auxpos[M_loc],max(list)))
-			tmp=which.min[which(list[M_loc+1:length(list)]==0)] #first 0 score after peak
-			list=list[tmp:length(list)]
-			auxpos=pos[tmp:length(list)]
-			}else{	
-				m_loc=max(which(list[1:M_loc]==0))			
-				max=max(list)
-				zones=rbind(zones, c(auxpos[m_loc+1],auxpos[M_loc],max))
-				tmp=which(list[M_loc:length(list)]==0) #first 0 score after peak
-				if (length(tmp)>0){
-				  auxpos=auxpos[c(1:m_loc,(min(tmp)+M_loc):length(list))]
-				  list=list[c(1:m_loc, (min(tmp)+M_loc):length(list))]
-				  }else{ #if the peak is at the end of the chromosome
-				    auxpos=auxpos[1:m_loc]
-				    list=list[1:m_loc]
-				    }				
-				}
-	  }
-	zones=matrix(zones, ncol=3)
-	zones=data.table(beg=zones[,1],end=zones[,2],peak=zones[,3])
-	if (nrow(zones)>1){zones=zones[-1,]}
-	return(zones)
-	}
+  zones=c(0,0,0)	
+  list=lind
+  auxpos=pos
+  while(max(list)>=th){
+    M_loc=which.max(list) 
+    if(length(which(list[1:M_loc]==0))==0){ #the peak is at the beginning of the chrom 
+      m_loc=1
+      zones=rbind(zones, c(auxpos[m_loc],auxpos[M_loc],max(list)))
+      tmp=which(list[M_loc:length(list)]==0) #first 0 score after peak
+      list=list[(min(tmp)+M_loc):length(list)]
+      auxpos=auxpos[(min(tmp)+M_loc):length(list)]
+    }else{	
+      m_loc=max(which(list[1:M_loc]==0)) #Define m_loc as the maximum numbered list element that has Lindley=0 before the peak list element			
+      max=max(list)
+      zones=rbind(zones, c(auxpos[m_loc+1],auxpos[M_loc],max))
+      tmp=which(list[M_loc:length(list)]==0) #first 0 score after peak
+      if (length(tmp)>0){
+        auxpos=auxpos[c(1:m_loc,(min(tmp)+M_loc):length(list))]
+        list=list[c(1:m_loc, (min(tmp)+M_loc):length(list))]
+      }else{ #if the peak is at the end of the chromosome
+        auxpos=auxpos[1:m_loc]
+        list=list[1:m_loc]
+      }				
+    }
+  }
+  zones=matrix(zones, ncol=3)
+  zones=data.table(beg=zones[,1],end=zones[,2],peak=zones[,3])
+  if (nrow(zones)>1){zones=zones[-1,]}
+  return(zones)
+}
 
 ### Estimation of Gumble coeficients.
 
