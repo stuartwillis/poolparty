@@ -590,7 +590,8 @@ if [[ "$FET" =~(on)$ ]]; then
 # 				Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout
 
 	##chunking code
-			declare -i LEN=( `wc -l $OUTDIR/temp/${PREFIX}_keep2.fet `)
+#			declare -i LEN=( `wc -l $OUTDIR/temp/${PREFIX}_keep2.fet `)
+			declare -i LEN=$( cat $OUTDIR/temp/${PREFIX}_keep2.fet | wc -l )
 
 			if [ $LEN -le 1000000 ]; then 
 
@@ -635,7 +636,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 
 	##chunking code
-			declare -i LEN=( `wc -l $OUTDIR/temp/${PREFIX}_keep2.fet `)
+			declare -i LEN=$( cat $OUTDIR/temp/${PREFIX}_keep2.fet | wc -l )
 
 			if [ $LEN -le 1000000 ]; then 
 

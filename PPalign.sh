@@ -426,7 +426,7 @@ fi
 				else
 					${BBMAPDIR}/bbduk.sh -${KMEM} in=$INDIR/${array[i]} in2=$INDIR/${array[i+1]} out=$o1 out2=$o2 \
 					ref=${BBMAPDIR}/resources/adapters.fa ktrim=r k=23 tpe tbo qtrim=r trimq=${BQUAL} minlength=${MINLENGTH} minavgquality=${BQUAL} threads=${THREADZ} stats=$OUTDIR/trimmed/${b}_trimstats.txt
-					gzip $o1; gzip $o2
+#					gzip $o1; gzip $o2
 				fi
 			fi
 		done
@@ -451,7 +451,7 @@ fi
 					#Add modifications below if needed#
 					${BBMAPDIR}/bbduk.sh -${KMEM} in=$INDIR/${array[i]} out=$o1  \
 					ref=${BBMAPDIR}/resources/adapters.fa ktrim=r k=23 tpe tbo qtrim=r trimq=${BQUAL} minlength=${MINLENGTH} minavgquality=${BQUAL} threads=${THREADZ} stats=$OUTDIR/trimmed/${b}_trimstats.txt
-					gzip $o1
+#					gzip $o1
 				fi
 			fi
 		done
@@ -464,6 +464,8 @@ fi
 	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ]; then
 		echo "WARNING: No trimmed files were produced"
 		exit 1
+	else
+		ls ${OUTDIR}/trimmed/*.trim_[12] | parallel -j ${THREADZ} "gzip {}" 
 	fi
 
 	if [[ "$QUALREPORT" =~(on)$ ]] && [ ! -z "$(ls -A ${OUTDIR}/trimmed)" ] ; then
@@ -953,9 +955,10 @@ fi
 					rm $OUTDIR/namelist2 &> /dev/null
 					for ((j = 0; j <= $LEN; j++));
 					do
-						NUM=( ` wc -l $OUTDIR/refint0$j.txt.vcf `)
+						k=$j+1
+						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
-							echo "$OUTDIR/refint0$j.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist2
+							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist2
 						fi
 					done
 
@@ -973,9 +976,10 @@ fi
 					rm $OUTDIR/namelist3 &> /dev/null
 					for ((j = 0; j <= $LEN; j++));
 					do
-						NUM=( ` wc -l $OUTDIR/refint0$j.txt.vcf `)
+						k=$j+1
+						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
-							echo "$OUTDIR/refint0$j.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist3
+							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist3
 						fi
 					done
 
@@ -1619,7 +1623,9 @@ fi
 
 rm -rf $OUTDIR/tmp
 
-echo "ALERT: PPalign completed at $(date) "
+echo "ALERT: PPalign completed at $(date)"
+echo "Quality reporting may still be running in the background; if PPalign appears stuck, this is usually why." 
+echo "Ctrl-C will abort quality reporting"
 
 if [[ -f $OUTDIR/${OUTPOP}.gtffile.params ]] ; then
 	rm $OUTDIR/${OUTPOP}.gtffile.params
