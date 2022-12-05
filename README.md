@@ -4,6 +4,8 @@
 
 Citation: "Micheletti SJ and SR Narum. 2018. Utility of pooled sequencing for association mapping in nonmodel organisms. Molecular Ecology Resources 10.1111/1755-0998.12784"
 
+Updates to the Local Score scripts provided by Kimberly R. Andrews.
+
 ## Getting Started
 
  PoolParty is designed to be run on Linux servers. As such, memory and storage may be limiting factors for some systems depending on genome sizes, number of pools, number of SNPs, etc.
