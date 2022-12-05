@@ -97,22 +97,24 @@ sig_sl=function(lind,pos, th){
     M_loc=which.max(list) 
     if(length(which(list[1:M_loc]==0))==0){ #the peak is at the beginning of the chrom 
       m_loc=1
-      zones=rbind(zones, c(auxpos[m_loc],auxpos[M_loc],max(list)))
-      tmp=which(list[M_loc:length(list)]==0) #first 0 score after peak
-	  #ORIGINAL CODE: tmp=which.min[which(list[M_loc+1:length(list)]==0)] #Remove "which.min" because it forces tmp to equal 1. Also, brackets should be parentheses.
-      list=list[(min(tmp)+M_loc):length(list)]
-	  #ORIGINAL CODE: list=list[tmp:length(list)] #This forces list to start near the beginning of the chromosome and causes an infinite loop
-      auxpos=auxpos[(min(tmp)+M_loc):length(list)]
-	  #ORIGINAL CODE: auxpos=pos[tmp:length(list)] #This forces auxpos to start near the beginning of the chromosome and causes an infinite loop
+      tmp=which(list[M_loc:length(list)]==0) #New list of all positions after the peak that have score=0
+	  #ORIGINAL CODE: tmp=which.min[which(list[M_loc+1:length(list)]==0)] #Remove "which.min" because it forces tmp to equal 1. Also, brackets should be parentheses. Also, the order of this command had to be moved to allow correct definition of the upper bound of LS outlier regions.
+      zones=rbind(zones, c(auxpos[m_loc],auxpos[M_loc+min(tmp)-2],max(list)))
+      #ORIGINAL CODE: zones=rbind(zones, c(auxpos[m_loc],auxpos[M_loc],max(list))) #Code modified to define upper bound of LS outlier region as the first point after the peak at which LS=0   
+      auxpos=auxpos[(min(tmp)+M_loc-1):length(list)]
+      #ORIGINAL CODE: auxpos=pos[tmp:length(list)] #This forces auxpos to start near the beginning of the chromosome and causes an infinite loop. Also, this command was originally placed after the next command, and the order of the two commands had to be swapped so that auxpos provides accurate bp positions.
+      list=list[(min(tmp)+M_loc-1):length(list)]
+	  #ORIGINAL CODE: list=list[tmp:length(list)] #This forces list to start near the beginning of the chromosome and causes an infinite loop      
     }else{	
       m_loc=max(which(list[1:M_loc]==0)) #Define m_loc as the maximum numbered list element that has Lindley=0 before the peak list element			
-      max=max(list)
-      zones=rbind(zones, c(auxpos[m_loc+1],auxpos[M_loc],max))
-      tmp=which(list[M_loc:length(list)]==0) #first 0 score after peak
+      #max=max(list) #This was in the original code but is not needed
+      tmp=which(list[M_loc:length(list)]==0) #New list of all positions after the peak that have score=0. The order of this command had to be moved to allow correct definition of the upper bound of LS outlier regions.
       if (length(tmp)>0){
-        auxpos=auxpos[c(1:m_loc,(min(tmp)+M_loc):length(list))]
-        list=list[c(1:m_loc, (min(tmp)+M_loc):length(list))]
+        zones=rbind(zones, c(auxpos[m_loc+1],auxpos[M_loc+min(tmp)-2],max(list))) #Code modified to define upper bound of LS outlier region as the first point after the peak at which LS=0 
+        auxpos=auxpos[c(1:m_loc,(min(tmp)+M_loc-1):length(list))]
+        list=list[c(1:m_loc, (min(tmp)+M_loc-1):length(list))]      
       }else{ #if the peak is at the end of the chromosome
+        zones=rbind(zones, c(auxpos[m_loc+1],auxpos[length(list)],max(list))) #Code modified to define upper bound of LS outlier region as the first point after the peak at which LS=0 
         auxpos=auxpos[1:m_loc]
         list=list[1:m_loc]
       }				
