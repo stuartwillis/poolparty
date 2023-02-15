@@ -912,7 +912,7 @@ fi
 
 						for ((j = 0; j <= $LEN; j++));
 						do
-							k=$j+1
+							k=$(($j+1))
 							cat ${CHR[j]} ${SCAF[j]} > $OUTDIR/refint0$k.txt
 						done
 
@@ -955,7 +955,7 @@ fi
 					rm $OUTDIR/namelist2 &> /dev/null
 					for ((j = 0; j <= $LEN; j++));
 					do
-						k=$j+1
+						k=$(($j+1))
 						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
 							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist2
@@ -976,7 +976,7 @@ fi
 					rm $OUTDIR/namelist3 &> /dev/null
 					for ((j = 0; j <= $LEN; j++));
 					do
-						k=$j+1
+						k=$(($j+1))
 						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
 							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist3
@@ -999,7 +999,8 @@ fi
 					##loop over all reference files to check that output is not empty; if it is:
 					for ((j = 0; j <= $LEN; j++));
 					do
-						NUM=( ` wc -l $OUTDIR/refint0$j.txt.vcf `)
+						k=$(($j+1))
+						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
 							echo -e "\n\nOne or more temporary VCF files is empty; SNP calling failed!"
 							exit 1
