@@ -461,11 +461,13 @@ fi
 		awk '{ sub("\r$", ""); print $0 }'  $OUTDIR/${OUTPOP}_names.txt > $OUTDIR/${OUTPOP}_names.tmp && mv $OUTDIR/${OUTPOP}_names.tmp $OUTDIR/${OUTPOP}_names.txt
 	
 	#Check that trimmed folder was written to
-	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ]; then
-		echo "WARNING: No trimmed files were produced"
+	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ] && [ -z "$(ls -A ${OUTDIR}/BAM)" ]; then
+		echo "WARNING: BAM folder is empty and no trimmed files were produced; exiting"
 		exit 1
 	else
-		ls ${OUTDIR}/trimmed/*.trim_[12] | parallel -j ${THREADZ} "gzip {}" 
+		if [ ! -z "$(ls -A ${OUTDIR}/trimmed)" ]; then
+			ls ${OUTDIR}/trimmed/*.trim_[12] | parallel -j ${THREADZ} "gzip {}" 
+		fi
 	fi
 
 	if [[ "$QUALREPORT" =~(on)$ ]] && [ ! -z "$(ls -A ${OUTDIR}/trimmed)" ] ; then
