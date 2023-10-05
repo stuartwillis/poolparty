@@ -145,7 +145,7 @@ lineGumb=function(x){
 # depending on the length of the chromosomes and the chromosome autocorrelation
 
 coefsGumb=function(mydata, Ls=seq(10000,80000,10000), nSeq=5000, degMod=2){
-  bins=seq(0.025,0.975,0.05) 
+  bins=seq(0.025,0.975,0.01) 
   coefs=array(0, dim=c(length(bins),5, length(Ls)))  
   coefs[,5,]=matrix(rep(Ls,length(bins)), ncol=length(Ls),byrow=TRUE)
   as=matrix(0, ncol=length(Ls), nrow=length(bins))
@@ -189,7 +189,7 @@ coefsGumb=function(mydata, Ls=seq(10000,80000,10000), nSeq=5000, degMod=2){
   fitA=lm((auxAs)~I(rhos))  
   fitB=lm((auxBs)~I(rhos))  
   
-  pdf('FitAandB.pdf')
+  pdf(paste0("FitAandB_",xi,".pdf"))
   par(mfrow=c(1,2))
   plot(rhos, auxAs, pch=16, col=coefs[,5,][auxWhich]/10000, xlab='rho', ylab='a-log(M)')
   xslm=seq(0,1,0.01)
@@ -340,47 +340,80 @@ meanl10<- mean(-log10(mydata$pval))
 alert1<- paste0("R ALERT: Mean of -log10p is ", round(meanl10,3))
 print(alert1)
 
-print("R ALERT: The quantiles of -log10p (potential choices of Xi): ")
-print(c(quantile(-log10(mydata$pval), probs = seq(0.8, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.95, 1, 0.01))))
+print("R ALERT: The Xi (or tuning) parameter controls the degree of smoothing the underlying distribution of significance: ")
+print("R ALERT: It represents a tradeoff between precision and power: ")
+print("R ALERT: lower value (less smoothing) provides more power, but less precision (larger islands of divergence; more false positives);")
+print("R ALERT: larger values (more smoothing) provide greater precision, but less power (more false negatives).")
+print("R ALERT: The quantiles of -log10p (potential choices of Xi) are (also printed to file): ")
+print(c(quantile(-log10(mydata$pval), probs = seq(0.6, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.96, 0.99, 0.01))))
 
 print("R ALERT: Which produce differences of (only negative values will work!): ")
-print(meanl10-c(quantile(-log10(mydata$pval), probs = seq(0.8, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.95, 1, 0.01))))
+print(meanl10-c(quantile(-log10(mydata$pval), probs = seq(0.6, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.96, 0.99, 0.01))))
+
+write.table("R ALERT: The quantiles of -log10p (potential choices of Xi) are: ",
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=F)
+write.table(rbind(as.integer((c(seq(0.6, 0.95, 0.05),seq(0.96, 0.99, 0.01))*100)),
+                  c(quantile(-log10(mydata$pval), probs = seq(0.6, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.96, 0.99, 0.01)))),
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=T)
+write.table("R ALERT: Which produce differences of (only negative values will work!): ",
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=T)
+write.table(rbind(as.integer((c(seq(0.6, 0.95, 0.05),seq(0.96, 0.99, 0.01))*100)),
+                  meanl10-c(quantile(-log10(mydata$pval), probs = seq(0.6, 0.95, 0.05)),quantile(-log10(mydata$pval), probs = seq(0.96, 0.99, 0.01)))),
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=T)
+write.table("R ALERT: The smallest possible quantile of Xi is: ",
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=T)
+write.table(rbind((min(which(meanl10-quantile(-log10(mydata$pval), probs = seq(0.001, 0.999, 0.001))<0))/10),
+                  round(quantile(-log10(mydata$pval), probs = seq(0.001, 0.999, 0.001)),4)[min(which(meanl10-quantile(-log10(mydata$pval), probs = seq(0.001, 0.999, 0.001))<0))]),
+            file="tuning_parameter_xi_percentiles.txt",col.names=F,row.names=F,quote=F,append=T)
+
+#xi = round(quantile(-log10(mydata$pval), probs = seq(0.001, 0.999, 0.001)),4)[min(which(meanl10-quantile(-log10(mydata$pval), probs = seq(0.001, 0.999, 0.001))<0))]
+#xi = "NULL"
 
 if (xi == "NULL") {
-	print("R ALERT: Determining tuning parameter (xi) using quantiles and mean score")
-	# We should verify that the mean of the score is negative. It should be according to the chosen value of xi.
-	
-  xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[18]]),3)
-	alert1<-paste0("R ALERT: Initial tuning parameter set to 85% quantile: ", xi)
-	print(alert1)
-
-	mdt=mydata
-	mdt[,score:= -log10(pval)-xi]
-	meanscore <- mean(mdt$score)
-	alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
-	print(alert2)
-
-	if (meanscore >= 0 | meanl10 > 4 ) {
-		print ("R ALERT: Mean score is not negative or differentiation is too high trying 90 % quantile")
-		mdt2=mydata
-		xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[19]]),3)
-		mdt2[,score:= -log10(pval)-xi]
-		meanscore <- mean(mdt2$score)
-		alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
-		print(alert2)
-			if (meanscore >= 0 | meanl10 > 8) {
-					mdt3=mydata
-					print ("R ALERT: Mean score is still not negative or differentiation is still too high, trying 95% quantile")
-					xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[20]]),3)
-					mdt3[,score:= -log10(pval)-xi]
-					meanscore <- mean(mdt3$score)
-					alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
-					print(alert2)
-					if (meanscore >= 0) {
-						print ("R ALERT: WARNING mean score is not negative. You can specify a custom Xi")
-					}
-			}
-	}
+  print("R ALERT: Determining tuning parameter (xi) using quantiles and mean score")
+  xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[15]]),3)
+  alert1<-paste0("R ALERT: Initial tuning parameter set to 70% quantile: ", xi)
+  print(alert1)
+  
+  mdt=mydata
+  mdt[,score:= -log10(pval)-xi]
+  meanscore <- mean(mdt$score)
+  alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
+  print(alert2)
+  rm(mdt)
+  if (meanscore >= 0 | meanl10 > 4 ) {
+    print ("R ALERT: Mean score is not negative or differentiation is too high trying 80 % quantile")
+    mdt2=mydata
+    xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[17]]),3)
+    mdt2[,score:= -log10(pval)-xi]
+    meanscore <- mean(mdt2$score)
+    alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
+    print(alert2)
+    rm(mdt2)
+    if (meanscore >= 0 | meanl10 > 8) {
+      mdt3=mydata
+      print ("R ALERT: Mean score is still not negative or differentiation is still too high, trying 90% quantile")
+      xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[19]]),3)
+      mdt3[,score:= -log10(pval)-xi]
+      meanscore <- mean(mdt3$score)
+      alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
+      print(alert2)
+      rm(mdt3)
+      if (meanscore >= 0 | meanl10 > 8) {
+        mdt3=mydata
+        print ("R ALERT: Mean score is still not negative or differentiation is still too high, trying 95% quantile")
+        xi=round((quantile(-log10(mydata$pval), probs = seq(0, 1, 0.05))[[20]]),3)
+        mdt3[,score:= -log10(pval)-xi]
+        meanscore <- mean(mdt3$score)
+        alert2<-paste0("R ALERT: Initial mean score is: ", meanscore)
+        print(alert2)
+        rm(mdt3)
+        if (meanscore >= 0) {
+          print ("R ALERT: WARNING mean score is not negative. You can specify a custom Xi")
+        }
+      }
+    }
+  }
 }
 
 
@@ -397,157 +430,178 @@ mydata[,lindley:=lindley(score),chr]
 #For uniform distribution
 
 if (KST >= 0.05 | FUni!="NULL" ) {
-	xi = round(xi, digits = 0)
-	 if (xi > 4){
-		xi=4
-	 }
-	 if (xi < 1) {
-		xi=1
-	 }
-	
-	xialtert=paste0("R ALERT: Uniform p-val xi is ", xi)
-	print(xialtert)
-
-	print("R ALERT: Calculating significance for a uniform p-val distribution")
-	chrInfo[,thG01:=thresUnif(L, cor, xi, 0.01),chr]
-	chrInfo[,thG001:=thresUnif(L, cor, xi, 0.001),chr]
-	chrInfo[,thG05:=thresUnif(L, cor, xi, 0.05),chr]
-	chrInfo[,thG075:=thresUnif(L, cor, xi, 0.075),chr]
-	mydata=mydata[chrInfo]
-	mydata=mydata[thG05>0&thG01>0&thG001>0&thG075>0]
-	
-	sigZones05=mydata[,sig_sl(lindley, pos, unique(thG05)),chr]
-	sigZones01=mydata[,sig_sl(lindley, pos, unique(thG01)),chr]
-	sigZones075=mydata[,sig_sl(lindley, pos, unique(thG075)),chr]
-	sigZones001=mydata[,sig_sl(lindley, pos, unique(thG001)),chr]
-	
-	print("R ALERT: Determining significance threshold and Writing files")
-	sig05name = paste0(outname, "_05sig.txt")
-	sig01name = paste0(outname, "_01sig.txt")
-	sig001name = paste0(outname, "_001sig.txt")
-	sig075name = paste0(outname, "_075sig.txt")
-	
-
-	ind=which(sigZones05[,peak]>0)
-	if (nrow(sigZones05) >0) {
-		write.table(sigZones05[ind,],file=sig05name,col.names=T,row.names=F,quote=F)
-	}
-	ind=which(sigZones01[,peak]>0)
-	if (nrow(sigZones01) >0) {
-		write.table(sigZones01[ind,],file=sig01name,col.names=T,row.names=F,quote=F)
-	}
-	ind=which(sigZones001[,peak]>0)
-	if (nrow(sigZones001) >0 ) {
-		write.table(sigZones001[ind,],file=sig001name,col.names=T,row.names=F,quote=F)
-	}
-	ind=which(sigZones075[,peak]>0)
-	if (nrow(sigZones075) >0 ) {
-		write.table(sigZones075[ind,],file=sig075name,col.names=T,row.names=F,quote=F)
-	}
-
-	avname = paste0(outname, "_mean_sig.txt")
-
-	#Average of significance thresholds 
-	cal05 <- mean(mydata$thG05)
-	cal01 <- mean(mydata$thG01)
-	cal075 <- mean(mydata$thG075)
-	cal001 <- mean(mydata$thG001)
-
-	AVsig=rbind(c(0.001,0.01,0.05,0.075), c(cal001,cal01,cal05,cal075))
-	write.table(AVsig,file=avname,col.names=F,row.names=F,quote=F)
-
-	#Chromosome specific thresholds 
-	mydatachr <- mydata[,unique(mydata$chr)]
-	mydatachr<- mydata[!duplicated(mydata$chr), ]
-
-		cal05chr <- mydatachr$thG05
-		cal01chr <- mydatachr$thG01
-		cal075chr <- mydatachr$thG075
-		cal001chr <- mydatachr$thG001
-
-	chrname = paste0(outname, "_chr_sig.txt")
-	CHsig= as.data.frame(cbind(mydatachr$chr,cal001chr,cal01chr,cal05chr,cal075chr))
-	colnames(CHsig) <- c("Chr", "sig.001", "sig.01", "sig.05", "sig.075")
-	write.table(CHsig,file=chrname,col.names=T,row.names=F,quote=F)
-
-
-	lsname = paste0(outname, ".ls")
-	lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
-	write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
-	}else{
-	
-		print("R ALERT: p-values are not uniform, determining correction coefficients")
-		coefsG=coefsGumb(mydata, Ls=seq(10000,70000,10000), nSeq=5000)
-		#ORIGINAL CODE: coefsG=coefsGumb(mydata, Ls=seq(30000,60000,10000), nSeq=5000)
-		
-		print("R ALERT: Determining significance thresholds and writing files")
-		chrInfo[,thG05:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.05),]
-		chrInfo[,thG01:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.01),]
-		chrInfo[,thG001:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.001),]
-		chrInfo[,thG075:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.075),]
-
-		mydata=mydata[chrInfo]
-		mydata=mydata[thG05>0&thG01>0&thG001>0&thG075>0]
-		
-		sigZones05=mydata[,sig_sl(lindley, pos, unique(thG05)),chr]
-		sigZones01=mydata[,sig_sl(lindley, pos, unique(thG01)),chr]
-		sigZones075=mydata[,sig_sl(lindley, pos, unique(thG075)),chr]
-		sigZones001=mydata[,sig_sl(lindley, pos, unique(thG001)),chr]
-
-		sig05name = paste0(outname, "_05sig.txt")
-		sig01name = paste0(outname, "_01sig.txt")
-		sig001name = paste0(outname, "_001sig.txt")
-		sig075name = paste0(outname, "_075sig.txt")
-	
-		ind=which(sigZones05[,peak]>0)
-		if (nrow(sigZones05) >0 ) {
-			write.table(sigZones05[ind,],file=sig05name,col.names=T,row.names=F,quote=F)
-		}
-		ind=which(sigZones01[,peak]>0)
-		if (nrow(sigZones01) >0 ) {
-			write.table(sigZones01[ind,],file=sig01name,col.names=T,row.names=F,quote=F)
-		}
-		ind=which(sigZones001[,peak]>0)
-		if (nrow(sigZones001) >0 ) {
-			write.table(sigZones001[ind,],file=sig001name,col.names=T,row.names=F,quote=F)
-		}
-		ind=which(sigZones075[,peak]>0)
-		if (nrow(sigZones075) >0 ) {
-			write.table(sigZones075[ind,],file=sig075name,col.names=T,row.names=F,quote=F)
-		}
-	
-		avname = paste0(outname, "_mean_sig.txt")
-
-			#Average of significance thresholds 
-			cal05 <- mean(mydata$thG05)
-			cal01 <- mean(mydata$thG01)
-			cal075 <- mean(mydata$thG075)
-			cal001 <- mean(mydata$thG001)
-		
-		AVsig=rbind(c(0.001,0.01,0.05,0.075), c(cal001,cal01,cal05,cal075))
-		write.table(AVsig,file=avname,col.names=F,row.names=F,quote=F)
-
-		#Chromosome specific thresholds 
-		mydatachr <- mydata[,unique(mydata$chr)]
-		mydatachr<- mydata[!duplicated(mydata$chr), ]
-
-		cal05chr <- mydatachr$thG05
-		cal01chr <- mydatachr$thG01
-		cal075chr <- mydatachr$thG075
-		cal001chr <- mydatachr$thG001
-
-
-		chrname = paste0(outname, "_chr_sig.txt")
-		CHsig<-as.data.frame(cbind(mydatachr$chr,cal001chr,cal01chr,cal05chr,cal075chr))
-		colnames(CHsig) <- c("Chr", "sig.001", "sig.01", "sig.05", "sig.075")
-		write.table(CHsig,file=chrname,col.names=T,row.names=F,quote=F)
-
-		lsname = paste0(outname, ".ls")
-		lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
-		write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
-
+  xi = round(xi, digits = 0)
+  if (xi > 4){
+    xi=4
+  }
+  if (xi < 1) {
+    xi=1
+  }
+  
+  xialtert=paste0("R ALERT: Uniform p-val xi is ", xi)
+  print(xialtert)
+  
+  print("R ALERT: Calculating significance for a uniform p-val distribution")
+  chrInfo[,thG01:=thresUnif(L, cor, xi, 0.01),chr]
+  chrInfo[,thG001:=thresUnif(L, cor, xi, 0.001),chr]
+  chrInfo[,thG05:=thresUnif(L, cor, xi, 0.05),chr]
+  chrInfo[,thG075:=thresUnif(L, cor, xi, 0.075),chr]
+  mydata=mydata[chrInfo]
+  mydata=mydata[thG05>0&thG01>0&thG001>0&thG075>0]
+  
+  sigZones05=mydata[,sig_sl(lindley, pos, unique(thG05)),chr]
+  sigZones01=mydata[,sig_sl(lindley, pos, unique(thG01)),chr]
+  sigZones075=mydata[,sig_sl(lindley, pos, unique(thG075)),chr]
+  sigZones001=mydata[,sig_sl(lindley, pos, unique(thG001)),chr]
+  
+  print("R ALERT: Determining significance threshold and Writing files")
+  # sig05name = paste0(outname, "_05sig.txt")
+  # sig01name = paste0(outname, "_01sig.txt")
+  # sig001name = paste0(outname, "_001sig.txt")
+  # sig075name = paste0(outname, "_075sig.txt")
+  sig05name = paste0(outname,"_",xi, "_05sig.txt")
+  sig01name = paste0(outname,"_",xi, "_01sig.txt")
+  sig001name = paste0(outname,"_",xi, "_001sig.txt")
+  sig075name = paste0(outname,"_",xi, "_075sig.txt")
+  
+  
+  ind=which(sigZones05[,peak]>0)
+  if (nrow(sigZones05) >0) {
+    write.table(sigZones05[ind,],file=sig05name,col.names=T,row.names=F,quote=F)
+  }
+  ind=which(sigZones01[,peak]>0)
+  if (nrow(sigZones01) >0) {
+    write.table(sigZones01[ind,],file=sig01name,col.names=T,row.names=F,quote=F)
+  }
+  ind=which(sigZones001[,peak]>0)
+  if (nrow(sigZones001) >0 ) {
+    write.table(sigZones001[ind,],file=sig001name,col.names=T,row.names=F,quote=F)
+  }
+  ind=which(sigZones075[,peak]>0)
+  if (nrow(sigZones075) >0 ) {
+    write.table(sigZones075[ind,],file=sig075name,col.names=T,row.names=F,quote=F)
+  }
+  
+  #	avname = paste0(outname, "_mean_sig.txt")
+  avname = paste0(outname,"_",xi, "_mean_sig.txt")
+  
+  #Average of significance thresholds 
+  cal05 <- mean(mydata$thG05)
+  cal01 <- mean(mydata$thG01)
+  cal075 <- mean(mydata$thG075)
+  cal001 <- mean(mydata$thG001)
+  
+  AVsig=rbind(c(0.001,0.01,0.05,0.075), c(cal001,cal01,cal05,cal075))
+  write.table(AVsig,file=avname,col.names=F,row.names=F,quote=F)
+  
+  #Chromosome specific thresholds 
+  mydatachr <- mydata[,unique(mydata$chr)]
+  mydatachr<- mydata[!duplicated(mydata$chr), ]
+  
+  cal05chr <- mydatachr$thG05
+  cal01chr <- mydatachr$thG01
+  cal075chr <- mydatachr$thG075
+  cal001chr <- mydatachr$thG001
+  
+  chrname = paste0(outname,"_",xi,"_chr_sig.txt")
+  CHsig= as.data.frame(cbind(mydatachr$chr,cal001chr,cal01chr,cal05chr,cal075chr))
+  colnames(CHsig) <- c("Chr", "sig.001", "sig.01", "sig.05", "sig.075")
+  write.table(CHsig,file=chrname,col.names=T,row.names=F,quote=F)
+  
+  lsname = paste0(outname,"_",xi, ".ls")
+  lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
+  write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
+  #lsname = paste0(outname, ".ls")
+  #lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
+  #write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
+}else{
+  
+  print("R ALERT: p-values are not uniform, determining correction coefficients")
+  print("R ALERT: If you see this error:")
+  print("Error in lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...) :0 (non-NA) cases")
+  print("R ALERT: It usually indicates a sampling error; try re-running the script.")
+  
+  coefsG=coefsGumb(mydata, Ls=seq(10000,max(seq(10000,80000,10000)[seq(10000,80000,10000)<=min(table(mydata$chr))]),5000), nSeq=5000)
+  #ORIGINAL CODE: coefsG=coefsGumb(mydata, Ls=seq(30000,60000,10000), nSeq=5000)
+  
+  print("R ALERT: Determining significance thresholds and writing files")
+  chrInfo[,thG05:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.05),]
+  chrInfo[,thG01:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.01),]
+  chrInfo[,thG001:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.001),]
+  chrInfo[,thG075:=threshold(L, cor, coefsG$aCoef, coefsG$bCoef,0.075),]
+  
+  mydata=mydata[chrInfo]
+  mydata=mydata[thG05>0&thG01>0&thG001>0&thG075>0]
+  
+  sigZones05=mydata[,sig_sl(lindley, pos, unique(thG05)),chr]
+  sigZones01=mydata[,sig_sl(lindley, pos, unique(thG01)),chr]
+  sigZones075=mydata[,sig_sl(lindley, pos, unique(thG075)),chr]
+  sigZones001=mydata[,sig_sl(lindley, pos, unique(thG001)),chr]
+  
+  # sig05name = paste0(outname, "_05sig.txt")
+  # sig01name = paste0(outname, "_01sig.txt")
+  # sig001name = paste0(outname, "_001sig.txt")
+  # sig075name = paste0(outname, "_075sig.txt")
+  sig05name = paste0(outname,"_",xi, "_05sig.txt")
+  sig01name = paste0(outname,"_",xi, "_01sig.txt")
+  sig001name = paste0(outname,"_",xi, "_001sig.txt")
+  sig075name = paste0(outname,"_",xi, "_075sig.txt")
+  
+  ind=which(sigZones075[,peak]>0)
+  if (nrow(sigZones075) >0 ) {
+    write.table(sigZones075[ind,],file=sig075name,col.names=T,row.names=F,quote=F,sep="\t")
+  }
+  ind=which(sigZones05[,peak]>0)
+  if (nrow(sigZones05) >0 ) {
+    write.table(sigZones05[ind,],file=sig05name,col.names=T,row.names=F,quote=F,sep="\t")
+  }
+  ind=which(sigZones01[,peak]>0)
+  if (nrow(sigZones01) >0 ) {
+    write.table(sigZones01[ind,],file=sig01name,col.names=T,row.names=F,quote=F,sep="\t")
+  }
+  ind=which(sigZones001[,peak]>0)
+  if (nrow(sigZones001) >0 ) {
+    write.table(sigZones001[ind,],file=sig001name,col.names=T,row.names=F,quote=F,sep="\t")
+  }
+  
+  #avname = paste0(outname, "_mean_sig.txt")
+  avname = paste0(outname,"_",xi, "_mean_sig.txt")
+  
+  #Average of significance thresholds 
+  cal05 <- mean(mydata$thG05)
+  cal01 <- mean(mydata$thG01)
+  cal075 <- mean(mydata$thG075)
+  cal001 <- mean(mydata$thG001)
+  
+  AVsig=rbind(c(0.001,0.01,0.05,0.075), c(cal001,cal01,cal05,cal075))
+  write.table(AVsig,file=avname,col.names=F,row.names=F,quote=F)
+  
+  #Chromosome specific thresholds 
+  mydatachr <- mydata[,unique(mydata$chr)]
+  mydatachr<- mydata[!duplicated(mydata$chr), ]
+  
+  cal05chr <- mydatachr$thG05
+  cal01chr <- mydatachr$thG01
+  cal075chr <- mydatachr$thG075
+  cal001chr <- mydatachr$thG001
+  
+  
+  chrname = paste0(outname,"_",xi, "_chr_sig.txt")
+  #		chrname = paste0(outname, "_chr_sig.txt")
+  CHsig<-as.data.frame(cbind(mydatachr$chr,cal001chr,cal01chr,cal05chr,cal075chr))
+  colnames(CHsig) <- c("Chr", "sig.001", "sig.01", "sig.05", "sig.075")
+  write.table(CHsig,file=chrname,col.names=T,row.names=F,quote=F)
+  
+  lsname = paste0(outname,"_",xi, ".ls")
+  lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
+  write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
+  #lsname = paste0(outname, ".ls")
+  #lsOUT<- as.data.frame(cbind(mydata$chr, mydata$pos, mydata$snp, mydata$lindley))
+  #write.table(lsOUT,file=lsname,col.names=F,row.names=F,quote=F)
+  
 }
 
+	
 end_time <- Sys.time()
 
 timerun = round(difftime(end_time , start_time, units = "mins"),2)

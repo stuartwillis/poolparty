@@ -407,6 +407,7 @@ fi
 	array=($FILES)
 
 	if [[ "$single" =~(off)$ ]] ; then
+		echo "ALERT: Proceeding to trimming of paired-end reads."
 		for (( i=0; i<${#array[@]} ; i+=2 )) ; do
 			b=${array[i]%%.*}
 			c=${array[i+1]%%.*}
@@ -424,6 +425,7 @@ fi
 				if [[ -f ${OUTDIR}/BAM/${b}_filtered.bam ]] ; then
 					echo "ALERT: ${b}_filtered.bam exists and will not be re-trimmed or re-aligned."
 				else
+					echo "ALERT: ${b}_filtered.bam does not exist. Trimming read files."
 					${BBMAPDIR}/bbduk.sh -${KMEM} in=$INDIR/${array[i]} in2=$INDIR/${array[i+1]} out=$o1 out2=$o2 \
 					ref=${BBMAPDIR}/resources/adapters.fa ktrim=r k=23 tpe tbo qtrim=r trimq=${BQUAL} minlength=${MINLENGTH} minavgquality=${BQUAL} threads=${THREADZ} stats=$OUTDIR/trimmed/${b}_trimstats.txt
 #					gzip $o1; gzip $o2
@@ -433,6 +435,7 @@ fi
 	fi
 	
 	if [[ "$single" =~(on)$ ]] ; then
+		echo "ALERT: Proceeding to trimming of single-end reads."
 		for (( i=0; i<${#array[@]} ; i+=1 )) ; do
 			b=${array[i]%%.*}
 			c=${array[i+1]%%.*}
@@ -461,9 +464,13 @@ fi
 		awk '{ sub("\r$", ""); print $0 }'  $OUTDIR/${OUTPOP}_names.txt > $OUTDIR/${OUTPOP}_names.tmp && mv $OUTDIR/${OUTPOP}_names.tmp $OUTDIR/${OUTPOP}_names.txt
 	
 	#Check that trimmed folder was written to
-	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ] && [ -z "$(ls -A ${OUTDIR}/BAM)" ]; then
-		echo "WARNING: BAM folder is empty and no trimmed files were produced; exiting"
-		exit 1
+	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ]; then
+#	if [ -z "$(ls -A ${OUTDIR}/trimmed)" ] && [ -z "$(ls -A ${OUTDIR}/BAM)" ]; then
+		echo "WARNING: No trimmed files were produced"
+		if [ -z "$(ls -A ${OUTDIR}/trimmed)" ] && [ -z "$(ls -A ${OUTDIR}/BAM)" ]; then
+			echo "WARNING: No trimmed files were produced AND BAM folder is empty; exiting"
+			exit 1
+		fi
 	else
 		if [ ! -z "$(ls -A ${OUTDIR}/trimmed)" ]; then
 			ls ${OUTDIR}/trimmed/*.trim_[12] | parallel -j ${THREADZ} "gzip {}" 
@@ -570,7 +577,11 @@ fi
 	echo "ALERT: Alignment reports started at $(date) for new samples"
 	for i in $(cat $OUTDIR/${OUTPOP}_names.txt); do
 		if [[ ! -f ${OUTDIR}/reports/${i}_aln_report.txt ]] ; then
-			nice -n 19 ${SAMTOOLS} flagstat ${OUTDIR}/BAM/${i}_sorted.bam > ${OUTDIR}/reports/${i}_aln_report.txt
+				if [[ -f ${OUTDIR}/BAM/${i}_filtered.bam ]] ; then
+					echo "ALERT: ${i}_filtered.bam exists; alignment report skipped."
+				else
+					nice -n 19 ${SAMTOOLS} flagstat ${OUTDIR}/BAM/${i}_sorted.bam > ${OUTDIR}/reports/${i}_aln_report.txt
+				fi
 		fi
 	done 
 
@@ -622,7 +633,7 @@ fi
 		rm $OUTDIR/filterlist &> /dev/null 
 		for i in $(cat $OUTDIR/${OUTPOP}_names.txt); do
 			if [[ -f ${OUTDIR}/BAM/${i}_filtered.bam ]] ; then
-				echo "ALERT: ${i}_filtered.bam exists; skipping"
+				echo "ALERT: ${i}_filtered.bam exists; skipping BAM filtering"
 			else
 				if [[ "$single" =~(off)$ ]] ; then
 					echo "ALERT: samtools is filtering ${OUTDIR}/BAM/${i}_sorted.bam at $(date) "
@@ -829,7 +840,8 @@ fi
 					echo "ALERT: Additional $lostm SNPs removed due to global MAF < $MAF "
 					echo "ALERT: $afterm total SNPs retained after SNP calling"
 
-				if [[ -f $OUTDIR/${OUTPOP}.VCF ]]; then
+				if [ "$afterm" -gt 0 ] ; then
+				#if [[ -f $OUTDIR/${OUTPOP}.VCF ]]; then
 					rm $OUTDIR/${OUTPOP}_Qualtemp.VCF
 					rm $OUTDIR/${OUTPOP}_full.VCF
 				else
@@ -873,7 +885,7 @@ fi
 						#shuffle intervals to distribute across threads
 						shuf $OUTDIR/reference_intervals.txt > $OUTDIR/reference_intervals_shuf.txt
 						#split the intervals into files, one per thread
-						rm $OUTDIR/refint*txt
+						rm $OUTDIR/refint*txt &> /dev/null
 						split -e --numeric-suffixes=1 -n l/${THREADZ} --additional-suffix='.txt' $OUTDIR/reference_intervals_shuf.txt refint
 						mv refint*txt $OUTDIR
 					else
@@ -881,13 +893,13 @@ fi
 						grep -v "^${SCAHEAD}" $OUTDIR/reference_intervals.txt >  $OUTDIR/chromosome_reference_intervals.txt
 						#shuffle chromosome intervals to distribute across threads
 						shuf $OUTDIR/chromosome_reference_intervals.txt > $OUTDIR/chromosome_reference_intervals_shuf.txt
-						rm chr_refint*.txt
+						rm chr_refint*.txt &> /dev/null
 						split -e --numeric-suffixes=1 -n l/${THREADZ} --additional-suffix='.txt' $OUTDIR/chromosome_reference_intervals_shuf.txt chr_refint
 						#get scaffold interval names
 						cat $OUTDIR/reference_intervals.txt | grep "^${SCAHEAD}"  >  $OUTDIR/scaffold_reference_intervals.txt
 						#shuffle scaffold intervals to distribute across threads
 						shuf $OUTDIR/scaffold_reference_intervals.txt > $OUTDIR/scaffold_reference_intervals_shuf.txt
-						rm scaf_refint*.txt
+						rm scaf_refint*.txt &> /dev/null
 						split -e --numeric-suffixes=1 -n l/${THREADZ} --additional-suffix='.txt' $OUTDIR/scaffold_reference_intervals_shuf.txt scaf_refint
 
 						#concatenate chromosome and scaffold interval files using loop
@@ -955,9 +967,10 @@ fi
 					##loop over all reference files to check that output is not empty; if it is:
 					##make new list; try to call in PARALLEL
 					rm $OUTDIR/namelist2 &> /dev/null
-					for ((j = 0; j <= $LEN; j++));
+					for ((j = 1; j <= $LEN; j++));
 					do
-						k=$(($j+1))
+						#k=$(($j+1))
+						k=$j
 						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
 							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist2
@@ -976,9 +989,10 @@ fi
 					##loop over all reference files to check that output is not empty; if it is:
 					##make new list again; try to call in SERIAL
 					rm $OUTDIR/namelist3 &> /dev/null
-					for ((j = 0; j <= $LEN; j++));
+					for ((j = 1; j <= $LEN; j++));
 					do
-						k=$(($j+1))
+						#k=$(($j+1))
+						k=$j
 						NUM=( ` wc -l $OUTDIR/refint0$k.txt.vcf `)
 						if [ "$NUM" -eq 0 ] ; then
 							echo "$OUTDIR/refint0$k.txt.vcf" | sed 's/\.vcf//' >> $OUTDIR/namelist3
@@ -1055,7 +1069,7 @@ fi
 						echo "ALERT: temp concatenated VCF missing header or non-header; re-concatenating Qualtemp vcfs"
 						rm $OUTDIR/sorted.VCF &> /dev/null
 						cp $OUTDIR/vcfheader.txt sorted.VCF
-						gunzip -c $OUTDIR/*_Qualtemp.vcf.gz | grep -v "^#" | sort -k1,1V -k2,2n --temporary-directory=$OUTDIR/tmp >> $OUTDIR/sorted.VCF
+						gunzip -c $OUTDIR/*_Qualtemp.vcf.gz | grep -v "^#" | sort -k1,1V -k2,2n -S 50% --parallel ${THREADZb} --temporary-directory=$OUTDIR/tmp >> $OUTDIR/sorted.VCF
 					fi
 				#end found sorted.VCF, check for header and non-header (SNP) lines
 				else
@@ -1063,9 +1077,15 @@ fi
 					echo "ALERT: temp sorted VCF NOT found; concatenating"
 					rm $OUTDIR/sorted.VCF &> /dev/null
 					cp $OUTDIR/vcfheader.txt $OUTDIR/sorted.VCF
-					gunzip -c $OUTDIR/*_Qualtemp.vcf.gz | grep -v "^#" | sort -k1,1V -k2,2n --temporary-directory=$OUTDIR/tmp >> $OUTDIR/sorted.VCF
+					gunzip -c $OUTDIR/*_Qualtemp.vcf.gz | grep -v "^#" | sort -k1,1V -k2,2n -S 50% --parallel ${THREADZb} --temporary-directory=$OUTDIR/tmp >> $OUTDIR/sorted.VCF
 				#end 're-make sorted.VCF from Qualtemp'
 				fi
+
+				if [ ! -z "$SCAHEAD" ]; then
+					cat $OUTDIR/vcfheader.txt <(grep -v "#" $OUTDIR/sorted.VCF | grep -v "^$SCAHEAD" ) <(grep -v "#" $OUTDIR/sorted.VCF | grep "^$SCAHEAD" ) > $OUTDIR/tmp/resorted.VCF
+					mv $OUTDIR/tmp/resorted.VCF $OUTDIR/sorted.VCF
+				fi
+
 
 				declare -i vcflines=$(cat $OUTDIR/sorted.VCF | wc -l ) 
 				declare -i head=$(cat $OUTDIR/vcfheader.txt | wc -l )
@@ -1482,12 +1502,12 @@ if [[ "$INDCONT" =~(on)$ ]] ; then
 				NINDIV=( `wc -l $OUTDIR/inds/${file}_ind_stats.txt` )
 				NINDIV=$(($NINDIV-1))
 
-				echo "${file} has $NINDIV individuals"
+				echo "ALERT:${file} has $NINDIV individuals"
 		
 				##reduce and tally all individuals in a pop at once
 				if [ $NINDIV -le $DIVIDE ]; then 
 
-					echo "making normalized sync for ${file} using pooled normalization script"
+					echo "ALERT:making normalized sync for ${file} using pooled normalization script"
 
 					rin=$OUTDIR/inds/${file}.sync
 					rout=$OUTDIR/inds/
@@ -1498,7 +1518,7 @@ if [[ "$INDCONT" =~(on)$ ]] ; then
 
 					declare -i NCHUNKS=$(echo $NINDIV/$DIVIDE | bc | sed 's/\.[0-9]*//g' )
 
-					echo "making normalized sync for ${file} using subsetted normalization script; DIVIDE threshold is $DIVIDE, meaning $NCHUNKS+1 subgroups"
+					echo "ALERT:making normalized sync for ${file} using subsetted normalization script; DIVIDE threshold is $DIVIDE, meaning $NCHUNKS+1 subgroups"
 					
 					###what if NINDIV is an exact multiple of DIVIDE? Script goes through extra empty loop, R throws error.  How to fix it??
 					#Does it matter?? It creates an empty file (or no file), and R finds no columns to write to temp file, so dies, then loop proceeds normally
@@ -1529,10 +1549,10 @@ if [[ "$INDCONT" =~(on)$ ]] ; then
 					Rscript $BASEDIR/rscripts/r_standardize_reduce.R $rin $rout
 	#				rm $OUTDIR/inds/${file}_temp_cat.sync
 					mv $OUTDIR/inds/${file}_temp_cat_norm.sync $OUTDIR/inds/${file}_norm.sync
-					echo "Normalized sync file written for ${file}"
+					echo "ALERT:Normalized sync file written for ${file}"
 				
 				else
-					echo "Can't figure out how to divide syncs by individuals"
+					echo "ERROR: Can't figure out how to divide syncs by individuals"
 					exit 1
 				fi
 			fi

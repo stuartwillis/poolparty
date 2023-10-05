@@ -10,12 +10,15 @@ options(scipen=999)
 args <- commandArgs()
 name <- args[6]
 outdir <- args[7]
+cols <- args[8]
 
 	alertname <- sub('.*/', '', name )
 	alertname2 <- sub('\\..*', '', alertname)
 
 snps <- fread(name, stringsAsFactors=FALSE, header=F, showProgress=FALSE)
 snps <- as.data.frame(snps)
+snps<-snps[,1:cols]
+
 snps [is.na(snps)] <- 0
 snps[snps=="na"]<-0
 snps <- apply(snps,2, function(x) as.numeric(as.character(x))) 

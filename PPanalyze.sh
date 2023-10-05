@@ -54,6 +54,16 @@ echo "ALERT: Performing error checking"
 			 echo 'ERROR: FZFILE file is missing, aborting.'
 			 exit
 		fi
+		if [ ! -z $BLACKLIST ]; then
+			if [[ ! -f $BLACKLIST ]] ; then
+			 	echo 'ERROR: BLACKLIST file is missing, aborting.'
+				exit
+			else
+				echo "ALERT: Blacklist has been specified: " $BLACKLIST
+				#echo "$BLACKLIST"
+			fi
+		fi
+
 	#Ensure poolparty directory is intact
 		if [ ! -d "$BASEDIR/rscripts" ] ; then
 			echo "ERROR: Poolparty directory has been tampered with"
@@ -291,7 +301,7 @@ else
 					FLEN=$(wc -l $FZFILE )
  					echo "ALERT: There were $FLEN SNPs before filters"
 					FLEN=$(wc -l < $OUTDIR/temp/${PREFIX}_$TSO2 )
- 					echo "ALERT: There are $FLEN SNPs marked by coverage filters"
+ 					echo "ALERT: There are $FLEN SNPs above coverage filters"
 
 	# Get indel/N blacklist from coverage file for all files specified 
 	TSO2B=$(date +%s | sha256sum | base64 | head -c 17 ; echo)
@@ -342,25 +352,32 @@ else
 		awk 'NR==FNR{a[$1,$2]=$3;next} ($1,$2) in a{next}{print $0, a[$1,$2]}'  $OUTDIR/temp/${PREFIX}_$TSO2B $OUTDIR/temp/${PREFIX}_$TSO4 > $OUTDIR/temp/${PREFIX}_${TSO4}_B
 					FLEN=$(wc -l < $OUTDIR/temp/${PREFIX}_${TSO4}_B )
  					echo "ALERT: There are $FLEN SNPs after coverage and N/indel filters"
-			rm $OUTDIR/temp/${PREFIX}_$TSO2 &> /dev/null
-			rm $OUTDIR/temp/${PREFIX}_$TSO1 &> /dev/null
-			rm $OUTDIR/temp/${PREFIX}_$TSO2B &> /dev/null
+		rm $OUTDIR/temp/${PREFIX}_$TSO2 &> /dev/null
+		rm $OUTDIR/temp/${PREFIX}_$TSO1 &> /dev/null
+		rm $OUTDIR/temp/${PREFIX}_$TSO2B &> /dev/null
 			
 	#Combine blacklist info into one temp file
+	echo "The following has been specified to identify blacklisted positions: $BLACKLIST"
 	TSO5=$(date +%s | sha256sum | base64 | head -c 12 ; echo)
-					BLEN=$(wc -l < $BLACKLIST )
+					BLEN=$(wc -l < "$BLACKLIST" )
 					echo "ALERT: There are $BLEN SNPs marked for removal from user-supplied blacklist"
-				cat $OUTDIR/temp/${PREFIX}_${TSO3}_mafBL $BLACKLIST | sort | uniq > $OUTDIR/temp/${PREFIX}_$TSO5
+					cat $OUTDIR/temp/${PREFIX}_${TSO3}_mafBL $BLACKLIST | sort | uniq > $OUTDIR/temp/${PREFIX}_$TSO5
 					BLEN=$(wc -l < $OUTDIR/temp/${PREFIX}_$TSO5 )
 					echo "ALERT: There are $BLEN SNPs marked for removal from blacklist and MAF filters"
-				gawk 'NR==FNR{a[$1,$2]=$3;next} ($1,$2) in a{next}{print $0, a[$1,$2]}' $OUTDIR/temp/${PREFIX}_$TSO5  $OUTDIR/temp/${PREFIX}_${TSO4}_B |  awk  '{gsub(" ","\t",$0); print;}' > $OUTDIR/${PREFIX}.sync
-					rm $OUTDIR/temp/${PREFIX}_$TSO4  &> /dev/null
-					rm $OUTDIR/temp/${PREFIX}_$TSO4_B &> /dev/null
-					rm $OUTDIR/temp/${PREFIX}_$TSO5 &> /dev/null
-					FLEN=$(wc -l < $OUTDIR/${PREFIX}.sync )
- 					echo "ALERT: There are $FLEN SNPs being analyzed after coverage, N/indel, MAF, and user-blacklist filters"
+					gawk 'NR==FNR{a[$1,$2]=$3;next} ($1,$2) in a{next}{print $0, a[$1,$2]}' $OUTDIR/temp/${PREFIX}_$TSO5  $OUTDIR/temp/${PREFIX}_${TSO4}_B |  awk  '{gsub(" ","\t",$0); print;}' > $OUTDIR/${PREFIX}.sync
+				rm $OUTDIR/temp/${PREFIX}_$TSO4  &> /dev/null
+				rm $OUTDIR/temp/${PREFIX}_$TSO4_B &> /dev/null
+				rm $OUTDIR/temp/${PREFIX}_$TSO5 &> /dev/null
 fi
 
+
+FLEN=$(wc -l < $OUTDIR/${PREFIX}.sync )
+echo "ALERT: There are $FLEN SNPs being analyzed after coverage, N/indel, MAF, and user-blacklist filters"
+
+if [ "$FLEN" -eq 0 ] ; then
+	echo "There are no SNPs left to analyze; something failed!"
+	exit 1
+fi
 
 #Run analyses 
 
@@ -569,6 +586,7 @@ if [[ "$FET" =~(on)$ ]]; then
 		awk '{gsub("=","\t",$0); print;}' $OUTDIR/temp/${PREFIX}_body.fet | awk '{ for (i=1;i<=NF;i+=2) $i="" } 1' | awk  '{gsub("  ","\t",$0); print;}' | awk  '{gsub(" ","",$0); print;}'  > $OUTDIR/temp/${PREFIX}_body2.fet
 		echo "ALERT: now doing FET reformatting Step 6"
 		cat $OUTDIR/temp/${PREFIX}_body_heading.fet $OUTDIR/temp/${PREFIX}_body2.fet > $OUTDIR/temp/${PREFIX}_prep.fet
+		
 
 		if  [[ -f ${OUTDIR}/${PREFIX}_avoidcols.txt ]] ; then
 			echo "ALERT: now doing FET reformatting Step 7 - the long one"
@@ -582,6 +600,7 @@ if [[ "$FET" =~(on)$ ]]; then
 			#Use above expression to remove fet columns in similar populations
 			awk "$FOUR" $OUTDIR/temp/${PREFIX}_prep.fet > $OUTDIR/temp/${PREFIX}_keep.fet
 			awk '{if (NR!=1) {print}}' $OUTDIR/temp/${PREFIX}_keep.fet > $OUTDIR/temp/${PREFIX}_keep2.fet
+			declare -i COL=$( head -n 1 $OUTDIR/temp/${PREFIX}_keep2.fet | wc -w )
 
 			#Create final fet file for this analysis.
 		
@@ -599,7 +618,8 @@ if [[ "$FET" =~(on)$ ]]; then
 
 				rin=$OUTDIR/temp/${PREFIX}_keep2.fet
 				rout=$OUTDIR/temp/
-				Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout
+				#Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
+				Rscript $BASEDIR/rscripts/r_combine_pSCW.R $rin $rout $COL
 
 			##reduce and tally subsets of individuals, then tally population together
 			elif [ $LEN -gt 1000000 ]; then 
@@ -619,7 +639,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 					rin=${FILES[j]}
 					rout=$OUTDIR/temp/
-					Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout
+					Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
 
 				done
 			 
@@ -637,6 +657,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 	##chunking code
 			declare -i LEN=$( cat $OUTDIR/temp/${PREFIX}_keep2.fet | wc -l )
+			declare -i COL=$( head -n 1 $OUTDIR/temp/${PREFIX}_keep2.fet | wc -w )
 
 			if [ $LEN -le 1000000 ]; then 
 
@@ -644,7 +665,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 				rin=$OUTDIR/temp/${PREFIX}_keep2.fet
 				rout=$OUTDIR/temp/
-				Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout
+				Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
 
 			##reduce and tally subsets of individuals, then tally population together
 			elif [ $LEN -gt 1000000 ]; then 
@@ -664,8 +685,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 					rin=${FILES[j]}
 					rout=$OUTDIR/temp/
-					Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout
-#					Rscript $BASEDIR/rscripts/r_combine_p_SCW.R $rin $rout
+					Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
 
 				done
 			 
@@ -693,6 +713,6 @@ fi
 #########################
 
 #	ls $OUTDIR/temp/${PREFIX}*
-	rm $OUTDIR/temp/${PREFIX}*
+#	rm $OUTDIR/temp/${PREFIX}*
 
 echo "ALERT: PPanalyze done at $(date)"
