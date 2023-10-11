@@ -618,8 +618,7 @@ if [[ "$FET" =~(on)$ ]]; then
 
 				rin=$OUTDIR/temp/${PREFIX}_keep2.fet
 				rout=$OUTDIR/temp/
-				#Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
-				Rscript $BASEDIR/rscripts/r_combine_pSCW.R $rin $rout $COL
+				Rscript $BASEDIR/rscripts/r_combine_p.R $rin $rout $COL
 
 			##reduce and tally subsets of individuals, then tally population together
 			elif [ $LEN -gt 1000000 ]; then 
