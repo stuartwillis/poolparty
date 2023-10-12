@@ -298,10 +298,10 @@ else
 			tail -n +2 $FZFILE | awk  "$FOUR" $COVFILE | awk '{print $1,$2}' > $OUTDIR/temp/${PREFIX}_$TSO2
 
 			#subset coverage sync file created
-					FLEN=$(wc -l $FZFILE )
+					FLEN=$(wc -l $FZFILE | cut -f1 -d' ')
  					echo "ALERT: There were $FLEN SNPs before filters"
 					FLEN=$(wc -l < $OUTDIR/temp/${PREFIX}_$TSO2 )
- 					echo "ALERT: There are $FLEN SNPs above coverage filters"
+ 					echo "ALERT: There are $FLEN SNPs passing coverage filters"
 
 	# Get indel/N blacklist from coverage file for all files specified 
 	TSO2B=$(date +%s | sha256sum | base64 | head -c 17 ; echo)
@@ -464,6 +464,8 @@ if [[ "$FST" =~(on)$ ]]; then
 	else
 		echo "ALERT: now doing FST reformatting"
 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fst >  $OUTDIR/temp/${PREFIX}_reclassing.fst
+		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fst | cut -f1 -d' ')
+		echo "ALERT: $after Fst SNPs remain after coverage filters"
 
 		#Cut up Sfst file
 		cut -d$'\t' -f 1-2 $OUTDIR/temp/${PREFIX}_reclassing.fst | gawk '$3=(FNR FS $3)' > $OUTDIR/temp/${PREFIX}_head.fst
@@ -520,6 +522,8 @@ if [[ "$SLIDINGFST" =~(on)$ ]]; then
 	else
 		echo "ALERT: now doing SFST reformatting"
 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.Sfst >  $OUTDIR/temp/${PREFIX}_reclassing.Sfst
+		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.Sfst | cut -f1 -d' ')
+		echo "ALERT: $after Sfst SNPs remain after coverage filters"
 
 		#Cut up Sfst file
 		cut -d$'\t' -f 1-2 $OUTDIR/temp/${PREFIX}_reclassing.Sfst | gawk '$3=(FNR FS $3)' > $OUTDIR/temp/${PREFIX}_head.Sfst
@@ -574,6 +578,8 @@ if [[ "$FET" =~(on)$ ]]; then
 	else
 		echo "ALERT: now doing FET reformatting Step 1"
 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fet >  $OUTDIR/temp/${PREFIX}_reclassing.fet
+		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fet | cut -f1 -d' ')
+		echo "ALERT: $after FET SNPs remain after coverage filters"
 
 		#Cut up fet file
 		echo "ALERT: now doing FET reformatting Step 2"

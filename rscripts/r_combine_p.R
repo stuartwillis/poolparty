@@ -17,7 +17,9 @@ cols <- args[8]
 
 snps <- fread(name, stringsAsFactors=FALSE, header=F, showProgress=FALSE)
 snps <- as.data.frame(snps)
+
 snps<-snps[,1:cols]
+snps <- as.data.frame(snps)
 
 snps [is.na(snps)] <- 0
 snps[snps=="na"]<-0
