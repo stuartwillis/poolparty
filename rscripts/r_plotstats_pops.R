@@ -526,8 +526,8 @@ pops<-as.character(pops$V1)
   #Write out coverage tables
   namez <- paste0(outname, "_mean_prop.txt")
   coma <- fpc
-  coma[1:pnumz,3]<-as.numeric(as.character(fbc[[3]]))
-  coma[(pnumz + 1),3] <- mean(as.numeric(coma[1:pnumz,3]))
+  coma[1:pnumz,3]<-as.numeric(as.character(fbc[[3]][order(as.numeric(as.character(fbc$V2)))]))
+  coma[(pnumz + 1),3] <- mean(as.numeric(as.character(coma[1:pnumz,3])))
   coma <- coma[complete.cases(coma), ]
   write.table(coma, namez , sep = " ", col.names = T, row.names = F, quote =F)
   print ("R ALERT: Proportion of genome stats complete")
@@ -744,16 +744,15 @@ pops<-as.character(pops$V1)
   		dop <-   infile[ which(infile$V1=='DOP'), ]
   		dop <- dop[,1:4]
   		####insert for loop to keep one line per pop
-  		depths<-unique(dop$V2)
+  		depths<-unique(as.numeric(as.character(dop$V2)))
   		depths<-depths[order(depths)]
-  		num.pops<-unique(dop$V3)
+  		num.pops<-unique(as.numeric(as.character(dop$V3)))
   		num.pops<-num.pops[order(num.pops)]
-  		dop2<-as.data.frame(matrix(nrow=0,ncol=ncol(dop)))
-  		p=1;d=1
+  		dop2<-as.data.frame(matrix(nrow=0,ncol=(ncol(dop)+1)))
   		for (p in 1:length(num.pops)) {
   		  for (d in 1:length(depths)) {
-  		    df<-head(dop[dop$V3==num.pops[p]&dop$V2==depths[d],],n=1)
-  		    df$V3<-pops[p]
+  		    df<-head(dop[dop$V3==as.character(num.pops[p])&dop$V2==as.character(depths[d]),],n=1)
+  		    df$V3<-as.character(pops[p])
   		    dop2<-rbind(dop2,df)
   		  }
   		}
@@ -999,15 +998,15 @@ pops<-as.character(pops$V1)
   		chrp<- chrp[,2:4]
   		colnames(chrp) <- c("Population", "Chromosome", "Proportion")
   		####insert for loop to keep one line per pop
-  		chroms<-unique(chrp$Chromosome)
+  		chroms<-unique(as.character(chrp$Chromosome))
   		chroms<-chroms[order(chroms)]
-  		chroms<-chroms[order(nchar(as.character(chroms)))]
-  		num.pops<-unique(chrp$Population)
+  		chroms<-chroms[order(nchar(as.character(chroms)),decreasing=T)]
+  		num.pops<-unique(as.numeric(as.character(chrp$Population)))
   		num.pops<-num.pops[order(num.pops)]
   		chrp2<-as.data.frame(matrix(nrow=0,ncol=ncol(chrp)))
   		for (p in 1:length(num.pops)) {
   		  for (c in 1:length(chroms)) {
-  		    df<-head(chrp[chrp$Population==num.pops[p]&chrp$Chromosome==chroms[c],],n=1)
+  		    df<-head(chrp[chrp$Population==as.character(num.pops[p])&chrp$Chromosome==as.character(chroms[c]),],n=1)
   		    df$Population<-pops[p]
   		    chrp2<-rbind(chrp2,df)
   		  }

@@ -521,8 +521,8 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
   #Write out coverage tables
   namez <- paste0(outname, "_mean_prop.txt")
   coma <- fpc
-  coma[1:pnumz,3]<-as.numeric(as.character(fbc[[3]]))
-  coma[(pnumz + 1),3] <- mean(as.numeric(coma[1:pnumz,3]))
+  coma[1:pnumz,3]<-as.numeric(as.character(fbc[[3]][order(as.numeric(as.character(fbc$V2)))]))
+  coma[(pnumz + 1),3] <- mean(as.numeric(as.character(coma[1:pnumz,3])))
   coma <- coma[complete.cases(coma), ]
   write.table(coma, namez , sep = " ", col.names = T, row.names = F, quote =F)
   print ("R ALERT: Proportion of genome stats complete")
@@ -738,8 +738,8 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
  	dop <-   infile[ which(infile$V1=='DOP'), ]
   	dop <- dop[,1:4]
   	####insert for loop to keep one line per pop
-  	depths<-unique(dop$V2)
-  	pops<-unique(dop$V3)
+  	depths<-unique(as.numeric(as.character(dop$V2)))
+  	pops<-unique(as.numeric(as.character(dop$V3)))
   	dop2<-as.data.frame(matrix(nrow=0,ncol=ncol(dop)))
   	for (p in 1:length(pops)) {
   	  for (d in 1:length(depths)) {
@@ -963,12 +963,15 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
   		chrp<- chrp[,2:4]
   		colnames(chrp) <- c("Population", "Chromosome", "Proportion")
   		####insert for loop to keep one line per pop
-  		chroms<-unique(chrp$Chromosome)
-  		pops<-unique(chrp$Population)
+  		chroms<-unique(as.character(chrp$Chromosome))
+  		chroms<-chroms[order(chroms)]
+  		chroms<-chroms[order(nchar(as.character(chroms)),decreasing=T)]
+  		pops<-unique(as.numeric(as.character(chrp$Population)))
+  		pops<-num.pops[order(pops)]
   		chrp2<-as.data.frame(matrix(nrow=0,ncol=ncol(chrp)))
   		for (p in 1:length(pops)) {
   		  for (c in 1:length(chroms)) {
-  		    chrp2<-rbind(chrp2,head(chrp[chrp$Population==pops[p]&chrp$Chromosome==chroms[c],],n=1))
+  		    chrp2<-rbind(chrp2,head(chrp[chrp$Population==as.character(pops[p])&chrp$Chromosome==as.character(chroms[c]),],n=1))
   		  }
   		}
   		chrp<-chrp2

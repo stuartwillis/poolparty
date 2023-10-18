@@ -463,9 +463,10 @@ if [[ "$FST" =~(on)$ ]]; then
 		echo "ALERT: $OUTDIR/${PREFIX}.fst exists; will not redo FST reformatting"
 	else
 		echo "ALERT: now doing FST reformatting"
-		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fst >  $OUTDIR/temp/${PREFIX}_reclassing.fst
-		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fst | cut -f1 -d' ')
-		echo "ALERT: $after Fst SNPs remain after coverage filters"
+# 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fst >  $OUTDIR/temp/${PREFIX}_reclassing.fst
+# 		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fst | cut -f1 -d' ')
+# 		echo "ALERT: $after Fst SNPs remain after coverage filters"
+		cp $OUTDIR/${PREFIX}_raw.fst $OUTDIR/temp/${PREFIX}_reclassing.fst
 
 		#Cut up Sfst file
 		cut -d$'\t' -f 1-2 $OUTDIR/temp/${PREFIX}_reclassing.fst | gawk '$3=(FNR FS $3)' > $OUTDIR/temp/${PREFIX}_head.fst
@@ -521,9 +522,10 @@ if [[ "$SLIDINGFST" =~(on)$ ]]; then
 		echo "ALERT: $OUTDIR/${PREFIX}.Sfst exists; will not redo sliding FST reformatting"
 	else
 		echo "ALERT: now doing SFST reformatting"
-		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.Sfst >  $OUTDIR/temp/${PREFIX}_reclassing.Sfst
-		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.Sfst | cut -f1 -d' ')
-		echo "ALERT: $after Sfst SNPs remain after coverage filters"
+# 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.Sfst >  $OUTDIR/temp/${PREFIX}_reclassing.Sfst
+# 		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.Sfst | cut -f1 -d' ')
+# 		echo "ALERT: $after Sfst SNPs remain after coverage filters"
+		cp $OUTDIR/${PREFIX}_raw.Sfst $OUTDIR/temp/${PREFIX}_reclassing.Sfst
 
 		#Cut up Sfst file
 		cut -d$'\t' -f 1-2 $OUTDIR/temp/${PREFIX}_reclassing.Sfst | gawk '$3=(FNR FS $3)' > $OUTDIR/temp/${PREFIX}_head.Sfst
@@ -577,9 +579,10 @@ if [[ "$FET" =~(on)$ ]]; then
 		echo "ALERT: $OUTDIR/${PREFIX}.fet exists; will not redo FET reformatting"
 	else
 		echo "ALERT: now doing FET reformatting Step 1"
-		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fet >  $OUTDIR/temp/${PREFIX}_reclassing.fet
-		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fet | cut -f1 -d' ')
-		echo "ALERT: $after FET SNPs remain after coverage filters"
+# 		awk '$5 >= '$MINCOV' &&  $5  <= '$MAXCOV' ' $OUTDIR/${PREFIX}_raw.fet >  $OUTDIR/temp/${PREFIX}_reclassing.fet
+# 		declare -i after=$(wc -l $OUTDIR/temp/${PREFIX}_reclassing.fet | cut -f1 -d' ')
+# 		echo "ALERT: $after FET SNPs remain after coverage filters"
+		cp $OUTDIR/${PREFIX}_raw.fet $OUTDIR/temp/${PREFIX}_reclassing.fet
 
 		#Cut up fet file
 		echo "ALERT: now doing FET reformatting Step 2"
