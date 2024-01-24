@@ -3,7 +3,8 @@ suppressMessages(require(reshape))
 suppressMessages(require(fBasics))
  suppressMessages(require(ggplot2))
  suppressMessages(require(RColorBrewer))
-
+# suppressMessages(require(matrixStats))
+ 
  
 #Get info for bash script
 args <- commandArgs()
@@ -91,8 +92,8 @@ pops<-as.character(pops$V1)
   	  tma$Population <- factor(tma$Population, levels = unique(tma$Population))
 
 		#Custom ticking - get ticks based on scale 
-  			scalehigh <- colMaxs(tma$Mean_Coverage)+colMaxs(tma$Stdev) 
- 			scalelow <- colMins(tma$Mean_Coverage)-colMaxs(tma$Stdev)
+  			scalehigh <- max(tma$Mean_Coverage,na.rm = T)+max(tma$Stdev,na.rm = T) 
+ 			scalelow <- min(tma$Mean_Coverage,na.rm = T)-max(tma$Stdev,na.rm = T)
   			diff <- scalehigh - scalelow
   
   		##TICK ADJUST##
@@ -180,8 +181,8 @@ pops<-as.character(pops$V1)
 
 	#plot
   	q <- ggplot(tma, aes(x = Population, y = Mean_Coverage, fill = Population)) + 
-   	 geom_bar(stat = "identity", width =.9, colour ="black", size =.25)  +
-    	geom_errorbar(aes(ymin=Mean_Coverage-Stdev,ymax=Mean_Coverage+Stdev), width=.2, size = .25, position=position_dodge(.9))
+   	 geom_bar(stat = "identity", width =.9, colour ="black", linewidth =.25)  +
+    	geom_errorbar(aes(ymin=Mean_Coverage-Stdev,ymax=Mean_Coverage+Stdev), width=.2, linewidth = .25, position=position_dodge(.9))
   
   	p <- q + labs(title= "Mean Depth of Coverage", x= "Library", y = "Mean Depth of Coverage (X)") + 
    	 theme(
@@ -246,8 +247,8 @@ pops<-as.character(pops$V1)
  	 fma$Population <- factor(fma$Population, levels = unique(fma$Population))
   
   		#plot
-  		scalehigh <- colMaxs(fma$Mean_Coverage)+colMaxs(fma$Stdev)
-  		scalelow <- colMins(fma$Mean_Coverage)-colMaxs(fma$Stdev)
+  		scalehigh <- max(fma$Mean_Coverage,na.rm = T)+max(fma$Stdev,na.rm = T)
+  		scalelow <- min(fma$Mean_Coverage,na.rm = T)-max(fma$Stdev,na.rm = T)
   		diff <- scalehigh - scalelow
 
   		##TICK ADJUST##
@@ -406,7 +407,7 @@ pops<-as.character(pops$V1)
   fpc$Population <- factor(fpc$Population, levels = unique(fpc$Population))
   
  		 #plot
-  		scalehigh <- colMaxs(fpc$Proportion_Covered) +  colMaxs(fpc$Proportion_Covered* .05) 
+  		scalehigh <- max(fpc$Proportion_Covered,na.rm = T) +  max(fpc$Proportion_Covered* .05,na.rm = T) 
   		scalelow <- 0
   		diff <- scalehigh - scalelow
 
@@ -626,7 +627,7 @@ pops<-as.character(pops$V1)
   	SCANC$Population <- factor(SCANC$Population, levels = unique(SCANC$Population))
   
   	#plot
-  	scalehigh <- colMaxs(SCANC$Proportion_Covered) +  colMaxs(SCANC$Proportion_Covered* .05) 
+  	scalehigh <- max(SCANC$Proportion_Covered,na.rm = T) +  max(SCANC$Proportion_Covered* .05,na.rm = T) 
   	scalelow <- 0
   	diff <- scalehigh - scalelow
  			 if (diff > 0 && diff < .05) {
@@ -1062,7 +1063,7 @@ pops<-as.character(pops$V1)
   		mean.mchr$wt <- with(mean.mchr, wm + (w - wm)/2)
   
 		#Plot
-  		scalehigh <- colMaxs(mean.mchr$mean)+ colMaxs(mean.mchr$mean* .5) 
+  		scalehigh <- max(mean.mchr$mean,na.rm = T)+ max(mean.mchr$mean* .5,na.rm = T) 
   		scalelow <- 0
   		diff <- scalehigh - scalelow
 
@@ -1210,7 +1211,7 @@ pops<-as.character(pops$V1)
       				c1 <- (colorz[pI])
       				colorz2 <- replicate(nrow(subz), c1)   
       
-      				scalehigh <- colMaxs(subz$Proportion)+ colMaxs(subz$Proportion) *.95 
+      				scalehigh <- max(subz$Proportion)+ max(subz$Proportion) *.95 
       				scalelow <- 0
       				diff <- scalehigh - scalelow
 			#TICK ADJUST#

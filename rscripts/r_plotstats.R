@@ -3,7 +3,8 @@ suppressMessages(require(reshape))
 suppressMessages(require(fBasics))
  suppressMessages(require(ggplot2))
  suppressMessages(require(RColorBrewer))
-
+# suppressMessages(require(matrixStats))
+ 
  
 #Get info for bash script
 args <- commandArgs()
@@ -87,8 +88,8 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
  	  tma$Population <- factor(tma$Population, levels = unique(tma$Population))
 
 		#Custom ticking - get ticks based on scale 
-  			scalehigh <- colMaxs(tma$Mean_Coverage)+colMaxs(tma$Stdev) 
- 			scalelow <- colMins(tma$Mean_Coverage)-colMaxs(tma$Stdev)
+  			scalehigh <- max(tma$Mean_Coverage,na.rm = T)+max(tma$Stdev,na.rm = T) 
+ 			scalelow <- min(tma$Mean_Coverage,na.rm = T)-max(tma$Stdev,na.rm = T)
   			diff <- scalehigh - scalelow
   
   		##TICK ADJUST##
@@ -242,8 +243,8 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
  	 fma$Population <- factor(fma$Population, levels = unique(fma$Population))
   
   		#plot
-  		scalehigh <- colMaxs(fma$Mean_Coverage)+colMaxs(fma$Stdev)
-  		scalelow <- colMins(fma$Mean_Coverage)-colMaxs(fma$Stdev)
+  		scalehigh <- max(fma$Mean_Coverage,na.rm = T)+max(fma$Stdev,na.rm = T)
+  		scalelow <- min(fma$Mean_Coverage,na.rm = T)-max(fma$Stdev,na.rm = T)
   		diff <- scalehigh - scalelow
 
   		##TICK ADJUST##
@@ -401,7 +402,7 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
   fpc$Population <- factor(fpc$Population, levels = unique(fpc$Population))
   
  		 #plot
-  		scalehigh <- colMaxs(fpc$Proportion_Covered) +  colMaxs(fpc$Proportion_Covered* .05) 
+  		scalehigh <- max(fpc$Proportion_Covered,na.rm = T) +  max(fpc$Proportion_Covered* .05,na.rm = T) 
   		scalelow <- 0
   		diff <- scalehigh - scalelow
 
@@ -620,7 +621,7 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
   	SCANC$Population <- factor(SCANC$Population, levels = unique(SCANC$Population))
   
   	#plot
-  	scalehigh <- colMaxs(SCANC$Proportion_Covered) +  colMaxs(SCANC$Proportion_Covered* .05) 
+  	scalehigh <- max(SCANC$Proportion_Covered,na.rm = T) +  max(SCANC$Proportion_Covered* .05,na.rm = T) 
   	scalelow <- 0
   	diff <- scalehigh - scalelow
  			 if (diff > 0 && diff < .05) {
@@ -1024,7 +1025,7 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
   		mean.mchr$wt <- with(mean.mchr, wm + (w - wm)/2)
   
 		#Plot
-  		scalehigh <- colMaxs(mean.mchr$mean)+ colMaxs(mean.mchr$mean* .5) 
+  		scalehigh <- max(mean.mchr$mean,na.rm = T)+ max(mean.mchr$mean* .5,na.rm = T) 
   		scalelow <- 0
   		diff <- scalehigh - scalelow
 
@@ -1172,7 +1173,7 @@ infile <- infile[,colSums(is.na(infile))<nrow(infile)]
       				c1 <- (colorz[pI])
       				colorz2 <- replicate(nrow(subz), c1)   
       
-      				scalehigh <- colMaxs(subz$Proportion)+ colMaxs(subz$Proportion) *.95 
+      				scalehigh <- max(subz$Proportion,na.rm = T)+ (max(subz$Proportion,na.rm = T) *.95) 
       				scalelow <- 0
       				diff <- scalehigh - scalelow
 			#TICK ADJUST#
